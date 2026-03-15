@@ -41,3 +41,18 @@
   packages/api-client tsc ✅ | packages/ui tsc ✅ | packages/storage tsc ✅
   Prisma validate ✅ | inputs.yml valid ✅ | pnpm install ✅
 - Result: Phase 4+5 complete — monorepo scaffold built and validated
+
+---
+
+### 2026-03-15 | CLINE | Phase 4 Audit | Post-Scaffold Fixes
+
+- Action: Thorough cross-check of all 8 Phase 4 scaffold parts against plan. Ran `pnpm turbo typecheck --force` (full pipeline, all apps). Found 5 issues missed by original Phase 5 (which only ran per-package tsc, not full turbo pipeline).
+- Issues found and fixed:
+  1. **TS18003** — `apps/bluesentinel-mobile` had no source files → added `app/_layout.tsx` Expo Router root layout placeholder
+  2. **TS2742** — `apps/marine-guardian-enterprise` layout.tsx + page.tsx had non-portable inferred return types → added explicit `JSX.Element` return types + proper `import type { JSX, ReactNode } from "react"`
+  3. **@types/react dual-version conflict** — packages/ui pinned `~18.3.0`, web app used `^19.0.0` → added `"@types/react": "^19.0.0"` + `"@types/react-dom": "^19.0.0"` to root pnpm overrides
+  4. **next.config.ts deprecated key** — `experimental.serverComponentsExternalPackages` renamed to `serverExternalPackages` in Next.js 15 → moved to top-level
+  5. **Model count** — MANIFEST.txt + IMPLEMENTATION_MAP.md said 16 models but schema has 18 (PushToken + RefreshToken) → corrected in both files
+- Final typecheck result: `pnpm turbo typecheck` → **15 successful, 15 total** (0 failures) ✅
+- Governance updated: CHANGELOG_AI.md, IMPLEMENTATION_MAP.md (validation table extended to 13 rows), agent-log.md, lessons.md (4 new entries)
+- Result: Phase 4 audit complete — all issues resolved, full pipeline green

@@ -52,3 +52,44 @@
 - **Error**: Prisma/Zod schemas have boolean defaults (false, true) and null defaults — schema rejected these
 - **Fix**: Change `"default": { "type": "string" }` to `"default": { "type": ["string", "boolean", "number", "null"] }`
 - **Prevention**: When deriving schema for entity fields from Prisma, the `default` property must accommodate all Prisma default types (string, boolean, number, null). Never restrict to string-only.
+
+---
+
+### 2026-03-15 | Phase 5 Audit | Phase 5 validation must run full `pnpm turbo typecheck`, not per-package tsc
+
+- **Error**: Original Phase 5 only ran `tsc --noEmit` per package (shared, db, jobs, api-client, storage, ui). This missed errors that only surface at app level: TS18003 in bluesentinel-mobile, TS2742 in marine-guardian-enterprise, and @types/react dual-version conflict.
+- **Fix**: Always end Phase 5 with `pnpm turbo typecheck --force` (full pipeline, all 15 tasks, no cache).
+- **Prevention**: Phase 5 checklist MUST include `pnpm turbo typecheck` as the FINAL step covering all apps. Never mark Phase 5 as green until the full turbo typecheck pipeline passes.
+
+### 2026-03-15 | Phase 5 Audit | Next.js App Router components need explicit `JSX.Element` return type annotations
+
+- **Error**: `TS2742: The inferred type of 'RootLayout' cannot be named without a reference to '.pnpm/@types+react@18.3.28/...'`. TypeScript can infer the return type but can't express it portably when two @types/react versions coexist.
+- **Fix**: Add explicit return type annotations to all Next.js page and layout components:
+  ```typescript
+  import type { JSX, ReactNode } from "react";
+  export default function RootLayout({ children }: { children: ReactNode }): JSX.Element { ... }
+  export default function HomePage(): JSX.Element { ... }
+  ```
+- **Prevention**: All React component functions in `apps/marine-guardian-enterprise` MUST have explicit `): JSX.Element` return type annotations. This is non-negotiable in strict mode with monorepo @types/react.
+
+### 2026-03-15 | Phase 5 Audit | Pin @types/react to a single version via pnpm overrides in React monorepos
+
+- **Error**: `packages/ui` used `"@types/react": "~18.3.0"` while `apps/marine-guardian-enterprise` used `"@types/react": "^19.0.0"`. pnpm installed BOTH. TypeScript resolved `ReactNode` differently in different contexts → TS2742 `ReactNode is not assignable to ReactNode`.
+- **Fix**: Add to root `package.json`:
+  ```json
+  "pnpm": { "overrides": { "@types/react": "^19.0.0", "@types/react-dom": "^19.0.0" } }
+  ```
+  Then run `pnpm install`.
+- **Prevention**: In ANY React monorepo, always force a single @types/react version via pnpm overrides. For this project: always `^19.0.0`. This takes priority over individual package devDependency pins.
+
+### 2026-03-15 | Phase 5 Audit | Next.js 15 uses `serverExternalPackages` (not `experimental.serverComponentsExternalPackages`)
+
+- **Error**: `experimental.serverComponentsExternalPackages` was the Next.js 14 config key. It was promoted and renamed in Next.js 15 to `serverExternalPackages` at the top level (not inside `experimental`).
+- **Fix**: Remove the `experimental` wrapper and use `serverExternalPackages: ["@prisma/client", "prisma"]` as a top-level key in `next.config.ts`.
+- **Prevention**: Never use `experimental.serverComponentsExternalPackages` in this project. It is deprecated in Next.js 15 and will generate a warning.
+
+### 2026-03-15 | Phase 5 Audit | Every app scaffold must include at least one .ts/.tsx source file
+
+- **Error**: `TS18003: No inputs were found in config file 'apps/bluesentinel-mobile/tsconfig.json'`. The Phase 4 scaffold created package.json + app.json + tsconfig.json for bluesentinel-mobile but NO source files. TypeScript's `include` glob matched zero files.
+- **Fix**: Create a minimal Expo Router entry point: `apps/bluesentinel-mobile/app/_layout.tsx` with a `<Slot />` component.
+- **Prevention**: Every app scaffold MUST include at least one `.ts` or `.tsx` source file so TypeScript's `include` glob has at least one match. For Expo Router apps, always create `app/_layout.tsx` as the minimum viable entry point.

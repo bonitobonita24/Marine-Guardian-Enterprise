@@ -49,7 +49,7 @@ packages/
 
 ├── db/                           — Prisma ORM + security layers
 │   ├── prisma/
-│   │   ├── schema.prisma         — Full 16-model Prisma schema
+│   │   ├── schema.prisma         — Full 18-model Prisma schema
 │   │   └── migrations/
 │   │       └── apply_rls_policies.sql — PostgreSQL RLS + roles
 │   └── src/
@@ -147,7 +147,7 @@ L6  Prisma TenantGuard middleware — missing tenantId = hard error
 L7  RBAC role matrix — enforced in tRPC procedures
 
 ═══════════════════════════════════════════════════════════════
-DATABASE MODELS (16)
+DATABASE MODELS (18)
 ═══════════════════════════════════════════════════════════════
 Tenant, User, TenantMembership, Barangay, Species,
 Fisherfolk, Vessel, Permit, CatchReport, Program,

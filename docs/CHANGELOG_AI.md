@@ -36,6 +36,35 @@
 
 ---
 
+## 2026-03-15 — Phase 4 Audit + Post-Scaffold Fixes
+
+- Agent: CLINE
+- Why: Thorough audit of all 8 Phase 4 scaffold parts to verify completeness and correctness against the plan. Found 4 issues missed in original Phase 5 validation (which only checked per-package tsc, not app-level or full turbo run). Fixed all 4. Re-ran full `pnpm turbo typecheck` — all 15/15 tasks now green.
+- Files added:
+  apps/bluesentinel-mobile/app/\_layout.tsx (Expo Router root layout — resolves TS18003 missing inputs)
+- Files modified:
+  apps/marine-guardian-enterprise/next.config.ts (experimental.serverComponentsExternalPackages → serverExternalPackages — Next.js 15 breaking rename),
+  apps/marine-guardian-enterprise/src/app/layout.tsx (added explicit JSX.Element return type + ReactNode import — fixes TS2742 non-portable type),
+  apps/marine-guardian-enterprise/src/app/page.tsx (added explicit JSX.Element return type — fixes TS2742),
+  package.json (added @types/react and @types/react-dom to pnpm overrides → forces single ^19.0.0 version across monorepo — fixes TS2742 dual-version conflict),
+  MANIFEST.txt (corrected model count 16 → 18; schema.prisma description updated),
+  docs/IMPLEMENTATION_MAP.md (corrected model count 16 → 18; added 4 new rows to Phase 5 validation table; all 15 tasks now green)
+- Files deleted: none
+- Schema/migrations: none
+- Errors encountered:
+  1. bluesentinel-mobile typecheck TS18003 — no source files in Phase 4 scaffold (only package.json + app.json + tsconfig.json created)
+  2. marine-guardian-enterprise typecheck TS2742 — non-portable inferred type in layout.tsx + page.tsx
+  3. @types/react dual-version conflict — packages/ui pinned ~18.3.0 while web app uses ^19.0.0, causing ReactNode type mismatch
+  4. MANIFEST.txt + IMPLEMENTATION_MAP.md model count error — listed 16 models, schema has 18 (PushToken + RefreshToken were missing from count)
+  5. next.config.ts used deprecated Next.js 14 key experimental.serverComponentsExternalPackages instead of Next.js 15 top-level serverExternalPackages
+- Errors resolved:
+  1. Added apps/bluesentinel-mobile/app/\_layout.tsx placeholder (Expo Router entry point)
+     2+3. Fixed TS2742 by adding explicit JSX.Element return types + adding @types/react: ^19.0.0 pnpm override to eliminate dual-version conflict
+  2. Updated MANIFEST.txt (2 locations) and IMPLEMENTATION_MAP.md (packages/db section)
+  3. Updated next.config.ts to use serverExternalPackages at top level
+
+---
+
 ## 2026-03-15 — Phase 4 + Phase 5: Full Monorepo Scaffold + Validation
 
 - Agent: CLINE
@@ -45,13 +74,13 @@
   packages/shared/package.json, packages/shared/tsconfig.json,
   packages/shared/src/enums.ts, packages/shared/src/types/_.ts (11 files), packages/shared/src/schemas/_.ts (9 files), packages/shared/src/index.ts,
   packages/db/package.json, packages/db/tsconfig.json,
-  packages/db/prisma/schema.prisma, packages/db/prisma/migrations/apply_rls_policies.sql,
+  packages/db/prisma/schema.prisma, packages/db/prisma/migrations/apply*rls_policies.sql,
   packages/db/src/client.ts, packages/db/src/rls.ts, packages/db/src/audit.ts, packages/db/src/seed.ts,
-  packages/db/src/middleware/tenant-guard.ts, packages/db/src/repositories/_.ts (3 files), packages/db/src/index.ts,
+  packages/db/src/middleware/tenant-guard.ts, packages/db/src/repositories/*.ts (3 files), packages/db/src/index.ts,
   packages/api-client/package.json, packages/api-client/tsconfig.json, packages/api-client/src/_.ts (3 files),
   packages/ui/package.json, packages/ui/tsconfig.json, packages/ui/src/lib/utils.ts, packages/ui/src/components/_.tsx (4 files), packages/ui/src/index.ts,
   packages/jobs/package.json, packages/jobs/tsconfig.json, packages/jobs/src/redis.ts, packages/jobs/src/queues.ts,
-  packages/jobs/src/workers/_.ts (2 files), packages/jobs/src/dlq/dlq-helpers.ts, packages/jobs/src/index.ts,
+  packages/jobs/src/workers/\_.ts (2 files), packages/jobs/src/dlq/dlq-helpers.ts, packages/jobs/src/index.ts,
   packages/storage/package.json, packages/storage/tsconfig.json, packages/storage/src/\*.ts (3 files),
   apps/marine-guardian-enterprise/package.json, apps/marine-guardian-enterprise/next.config.ts, apps/marine-guardian-enterprise/tsconfig.json,
   apps/marine-guardian-enterprise/tailwind.config.ts, apps/marine-guardian-enterprise/postcss.config.mjs,

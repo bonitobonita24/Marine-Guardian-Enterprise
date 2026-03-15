@@ -30,19 +30,23 @@
 
 ---
 
-## Validation Results (Phase 5) — 2026-03-15
+## Validation Results (Phase 5) — 2026-03-15 (re-validated 2026-03-15 after audit fixes)
 
-| Check                              | Result |
-| ---------------------------------- | ------ |
-| `pnpm install`                     | ✅     |
-| `packages/shared` tsc --noEmit     | ✅     |
-| `packages/db` tsc --noEmit         | ✅     |
-| `packages/jobs` tsc --noEmit       | ✅     |
-| `packages/api-client` tsc --noEmit | ✅     |
-| `packages/storage` tsc --noEmit    | ✅     |
-| `packages/ui` tsc --noEmit         | ✅     |
-| Prisma schema validate             | ✅     |
-| `node tools/validate-inputs.mjs`   | ✅     |
+| Check                                       | Result |
+| ------------------------------------------- | ------ |
+| `pnpm install`                              | ✅     |
+| `packages/shared` tsc --noEmit              | ✅     |
+| `packages/db` tsc --noEmit                  | ✅     |
+| `packages/jobs` tsc --noEmit                | ✅     |
+| `packages/api-client` tsc --noEmit          | ✅     |
+| `packages/storage` tsc --noEmit             | ✅     |
+| `packages/ui` tsc --noEmit                  | ✅     |
+| `apps/marine-guardian-enterprise` typecheck | ✅     |
+| `apps/worker` typecheck (via turbo)         | ✅     |
+| `apps/bluesentinel-mobile` typecheck        | ✅     |
+| Prisma schema validate                      | ✅     |
+| `node tools/validate-inputs.mjs`            | ✅     |
+| `pnpm turbo typecheck` (all 15 tasks)       | ✅     |
 
 ---
 
@@ -67,7 +71,7 @@
 
 ### packages/db ✅
 
-- `prisma/schema.prisma` — 16 models: Tenant, User, TenantMembership, Barangay, Species, Fisherfolk, Vessel, Permit, CatchReport, Program, ProgramBeneficiary, DistributionEvent, Incident, Patrol, Notification, AuditLog, PushToken, RefreshToken
+- `prisma/schema.prisma` — 18 models: Tenant, User, TenantMembership, Barangay, Species, Fisherfolk, Vessel, Permit, CatchReport, Program, ProgramBeneficiary, DistributionEvent, Incident, Patrol, Notification, AuditLog, PushToken, RefreshToken
 - `prisma/migrations/apply_rls_policies.sql` — PostgreSQL RLS policies + mg_app runtime role
 - `src/client.ts` — PrismaClient singleton with query logging in dev
 - `src/rls.ts` — L2: withTenantContext() using SET LOCAL in transactions

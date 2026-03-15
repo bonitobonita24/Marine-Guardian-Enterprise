@@ -8,9 +8,8 @@ const nextConfig: NextConfig = {
     "@marine-guardian/jobs",
     "@marine-guardian/storage",
   ],
-  experimental: {
-    serverComponentsExternalPackages: ["@prisma/client", "prisma"],
-  },
+  // Next.js 15: serverComponentsExternalPackages moved to top-level serverExternalPackages
+  serverExternalPackages: ["@prisma/client", "prisma"],
 };
 
 export default nextConfig;
