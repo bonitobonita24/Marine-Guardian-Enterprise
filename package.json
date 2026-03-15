@@ -1,0 +1,28 @@
+{
+  "name": "marine-guardian-enterprise",
+  "private": true,
+  "version": "0.0.1",
+  "packageManager": "pnpm@9.12.0",
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9.12.0"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "clean": "turbo run clean",
+    "tools:validate-inputs": "node tools/validate-inputs.mjs",
+    "tools:check-env": "node tools/check-env.mjs",
+    "tools:check-product-sync": "node tools/check-product-sync.mjs",
+    "db:migrate": "turbo run db:migrate --filter=@marine-guardian/db",
+    "db:seed": "turbo run db:seed --filter=@marine-guardian/db",
+    "db:studio": "turbo run db:studio --filter=@marine-guardian/db"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.3"
+  }
+}
