@@ -1,5 +1,5 @@
 {
-  "name": "{{APP_NAME}}-devcontainer",
+  "name": "marine-guardian-enterprise-devcontainer",
   "build": {
     "dockerfile": "Dockerfile",
     "context": ".."

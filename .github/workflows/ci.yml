@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  typecheck-lint-test:
+    name: TypeCheck + Lint + Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate inputs.yml
+        run: node tools/validate-inputs.mjs
+
+      - name: TypeCheck all packages
+        run: pnpm turbo typecheck
+
+      - name: Lint all packages
+        run: pnpm turbo lint
+
+      - name: Build all packages
+        run: pnpm turbo build --filter=!marine-guardian-enterprise --filter=!bluesentinel-mobile
+
+      - name: Validate Prisma schema
+        run: pnpm --filter=@marine-guardian/db db:generate -- --dry-run 2>/dev/null || pnpm --filter=@marine-guardian/db exec prisma validate
+
+  prisma-validate:
+    name: Prisma Schema Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter=@marine-guardian/db exec prisma validate
+        env:
+          DATABASE_URL: postgresql://user:pass@localhost:5432/db
+          DIRECT_DATABASE_URL: postgresql://user:pass@localhost:5432/db

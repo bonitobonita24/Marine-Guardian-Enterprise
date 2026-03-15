@@ -1,0 +1,443 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Spec-Driven Platform V10 — inputs.yml schema",
+  "description": "Validates inputs.yml for Marine Guardian Enterprise",
+  "type": "object",
+  "required": [
+    "version",
+    "app",
+    "tenancy",
+    "domains",
+    "environments",
+    "apps",
+    "packages",
+    "tech_stack",
+    "security",
+    "roles",
+    "entities",
+    "jobs",
+    "storage",
+    "realtime",
+    "mobile",
+    "routing",
+    "dashboards",
+    "deploy"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "integer",
+      "const": 3
+    },
+    "app": {
+      "type": "object",
+      "required": ["name", "slug", "description", "local_port"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "slug": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+        "description": { "type": "string", "minLength": 1 },
+        "local_port": { "type": "integer", "minimum": 1024, "maximum": 65535 }
+      }
+    },
+    "tenancy": {
+      "type": "object",
+      "required": ["mode", "routing", "slug_field", "slug_immutable", "tenant_types"],
+      "properties": {
+        "mode": { "type": "string", "enum": ["single", "multi"] },
+        "routing": { "type": "string", "enum": ["subdirectory", "subdomain"] },
+        "slug_field": { "type": "string" },
+        "slug_immutable": { "type": "boolean" },
+        "tenant_types": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "shared_global_data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["entity", "access"],
+            "properties": {
+              "entity": { "type": "string" },
+              "access": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "domains": {
+      "type": "object",
+      "required": ["dev", "stage", "prod"],
+      "properties": {
+        "dev": { "type": "string", "format": "uri" },
+        "stage": { "type": "string", "format": "uri" },
+        "prod": { "type": "string", "format": "uri" }
+      }
+    },
+    "environments": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["dev", "stage", "prod"] },
+      "minItems": 1
+    },
+    "apps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "type", "description"],
+        "properties": {
+          "name": { "type": "string" },
+          "type": { "type": "string", "enum": ["nextjs", "mobile", "node"] },
+          "framework": { "type": "string" },
+          "router": { "type": "string" },
+          "port": { "type": "integer" },
+          "workflow": { "type": "string" },
+          "platforms": { "type": "array", "items": { "type": "string" } },
+          "distribution": { "type": "string" },
+          "entry": { "type": "string" },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "packages": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "tech_stack": {
+      "type": "object",
+      "required": [
+        "frontend",
+        "api",
+        "orm",
+        "auth",
+        "database",
+        "cache",
+        "queue",
+        "storage",
+        "ui_web"
+      ],
+      "properties": {
+        "frontend": { "type": "string" },
+        "api": { "type": "string" },
+        "orm": { "type": "string" },
+        "auth": {
+          "type": "object",
+          "required": ["web"],
+          "properties": {
+            "web": { "type": "string" },
+            "mobile": { "type": "string" }
+          }
+        },
+        "database": { "type": "string" },
+        "connection_pooler": { "type": "object" },
+        "cache": { "type": "string" },
+        "queue": { "type": "object" },
+        "storage": { "type": "object" },
+        "ui_web": { "type": "string" },
+        "ui_mobile": { "type": "string" },
+        "realtime": { "type": "string" },
+        "offline_sync": { "type": "string" },
+        "mobile_maps": { "type": "string" },
+        "email": { "type": "object" }
+      }
+    },
+    "security": {
+      "type": "object",
+      "required": [
+        "rls",
+        "rbac",
+        "audit_log",
+        "query_guardrails",
+        "jwt_fields",
+        "cors",
+        "csrf",
+        "rate_limiting"
+      ],
+      "properties": {
+        "rls": {
+          "type": "object",
+          "required": ["enabled", "runtime_role", "migration_role", "rls_tables", "exempt_tables"],
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "runtime_role": { "type": "string" },
+            "migration_role": { "type": "string" },
+            "rls_tables": { "type": "array", "items": { "type": "string" } },
+            "exempt_tables": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "rbac": { "type": "boolean" },
+        "audit_log": { "type": "object" },
+        "query_guardrails": { "type": "string" },
+        "jwt_fields": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 3
+        },
+        "multi_tenant_login": { "type": "string" },
+        "cors": {
+          "type": "object",
+          "required": ["dev", "stage", "prod"],
+          "properties": {
+            "dev": { "type": "array", "items": { "type": "string" } },
+            "stage": { "type": "array", "items": { "type": "string" } },
+            "prod": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "csrf": { "type": "string" },
+        "rate_limiting": {
+          "type": "object",
+          "required": ["public_per_ip_per_min", "authenticated_per_user_per_min"],
+          "properties": {
+            "public_per_ip_per_min": { "type": "integer", "minimum": 1 },
+            "authenticated_per_user_per_min": { "type": "integer", "minimum": 1 },
+            "upload_per_user_per_min": { "type": "integer", "minimum": 1 },
+            "mobile_sync_per_device_per_min": { "type": "integer", "minimum": 1 }
+          }
+        }
+      }
+    },
+    "roles": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "scope", "description"],
+        "properties": {
+          "name": { "type": "string" },
+          "scope": { "type": "string" },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "entities": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "tenanted", "fields"],
+        "properties": {
+          "name": { "type": "string" },
+          "tenanted": { "type": "boolean" },
+          "rls": { "type": "boolean" },
+          "immutable": { "type": "boolean" },
+          "unique_constraints": { "type": "array" },
+          "fisherfolk_code": { "type": "object" },
+          "seed": { "type": "object" },
+          "fields": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["name", "type"],
+              "properties": {
+                "name": { "type": "string" },
+                "type": { "type": "string" },
+                "pk": { "type": "boolean" },
+                "default": { "type": ["string", "boolean", "number", "null"] },
+                "unique": { "type": "boolean" },
+                "unique_per_tenant": { "type": "boolean" },
+                "nullable": { "type": "boolean" },
+                "relation": { "type": "string" },
+                "enum": { "type": "array", "items": { "type": "string" } },
+                "updatedAt": { "type": "boolean" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "jobs": {
+      "type": "object",
+      "required": ["enabled", "provider", "queues"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "provider": { "type": "string" },
+        "backend": { "type": "string" },
+        "dlq_ui": { "type": "boolean" },
+        "dlq_ui_roles": { "type": "array", "items": { "type": "string" } },
+        "queues": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["name", "job", "trigger"],
+            "properties": {
+              "name": { "type": "string" },
+              "job": { "type": "string" },
+              "trigger": { "type": "string" },
+              "delivery": { "type": "string" },
+              "retry": { "type": "integer" },
+              "backoff": { "type": "string" },
+              "dlq": { "type": "boolean" },
+              "cron": { "type": "string" },
+              "dlq_behavior": { "type": "string" },
+              "log_results_to": { "type": "string" }
+            }
+          }
+        },
+        "inline_jobs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "trigger", "sync"],
+            "properties": {
+              "name": { "type": "string" },
+              "trigger": { "type": "string" },
+              "sync": { "type": "boolean" },
+              "rollback_parent_on_failure": { "type": "boolean" },
+              "cannot_be_disabled": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    },
+    "storage": {
+      "type": "object",
+      "required": ["enabled", "provider_dev", "buckets"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "provider_dev": { "type": "string" },
+        "provider_prod": { "type": "string" },
+        "upload_method": { "type": "string" },
+        "buckets": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["name", "path_pattern"],
+            "properties": {
+              "name": { "type": "string" },
+              "path_pattern": { "type": "string" },
+              "allowed_types": { "type": "array" },
+              "max_size_mb": { "type": "number" },
+              "store_original": { "type": "boolean" },
+              "type": { "type": "string" },
+              "generated_by": { "type": "string" },
+              "compressed_max_mb": { "type": "number" },
+              "max_per_incident": { "type": "integer" },
+              "upload_method": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "realtime": {
+      "type": "object",
+      "required": ["transport", "channels"],
+      "properties": {
+        "transport": { "type": "string" },
+        "channels": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["name", "scope", "trigger", "subscribers"],
+            "properties": {
+              "name": { "type": "string" },
+              "scope": { "type": "string" },
+              "trigger": { "type": "string" },
+              "subscribers": { "type": "array", "items": { "type": "string" } },
+              "behavior": { "type": "string" },
+              "scoping": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "mobile": {
+      "type": "object",
+      "required": [
+        "framework",
+        "workflow",
+        "platforms",
+        "offline_first",
+        "push_notifications",
+        "native_features",
+        "auth"
+      ],
+      "properties": {
+        "framework": { "type": "string" },
+        "workflow": { "type": "string" },
+        "platforms": { "type": "array", "items": { "type": "string" } },
+        "distribution": { "type": "string" },
+        "offline_first": { "type": "boolean" },
+        "offline_storage": { "type": "string" },
+        "offline_entities": { "type": "array" },
+        "conflict_resolution": { "type": "object" },
+        "push_notifications": { "type": "object" },
+        "native_features": { "type": "object" },
+        "auth": { "type": "object" },
+        "deep_linking": { "type": "boolean" }
+      }
+    },
+    "routing": {
+      "type": "object",
+      "required": ["type", "public_routes", "protected_routes"],
+      "properties": {
+        "type": { "type": "string" },
+        "tenant_slug_path_segment": { "type": "integer" },
+        "public_routes": { "type": "array", "items": { "type": "string" } },
+        "protected_routes": { "type": "array", "items": { "type": "string" } },
+        "role_restricted_routes": { "type": "array" },
+        "tenant_boundary_enforcement": { "type": "string" },
+        "navigation": { "type": "string" }
+      }
+    },
+    "dashboards": {
+      "type": "object",
+      "properties": {
+        "lgu_operational": { "type": "object" },
+        "ba_operational": { "type": "object" },
+        "consolidated_cross_lgu": { "type": "object" }
+      }
+    },
+    "csv_export": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "tables": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "modules": {
+      "type": "object",
+      "properties": {
+        "web": { "type": "array" },
+        "mobile": { "type": "array" }
+      }
+    },
+    "fisherfolk_code": {
+      "type": "object",
+      "required": ["format", "pattern", "example", "sequence_scope"],
+      "properties": {
+        "format": { "type": "string" },
+        "pattern": { "type": "string" },
+        "example": { "type": "string" },
+        "sequence_scope": { "type": "string" },
+        "padding": { "type": "integer" }
+      }
+    },
+    "seed": { "type": "object" },
+    "compliance": { "type": "object" },
+    "deploy": {
+      "type": "object",
+      "required": ["k8s", "compose"],
+      "properties": {
+        "k8s": {
+          "type": "object",
+          "required": ["enabled"],
+          "properties": {
+            "enabled": { "type": "boolean", "const": false },
+            "scaffold": { "type": "string" }
+          }
+        },
+        "compose": {
+          "type": "object",
+          "required": ["services"],
+          "properties": {
+            "network_name": { "type": "string" },
+            "services": { "type": "array", "items": { "type": "string" } },
+            "start_script": { "type": "string" }
+          }
+        },
+        "aws_production": { "type": "object" }
+      }
+    }
+  }
+}
