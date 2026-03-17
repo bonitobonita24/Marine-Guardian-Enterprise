@@ -163,6 +163,46 @@
 
 ---
 
+## 2026-03-18 — Phase 8: Auth + Pages
+
+- Agent: CLINE
+- Why: Complete Phase 8 — Auth.js v5 integration, tRPC routers with tenant-scoped procedures, and all dashboard pages. Session resumed from Phase 7 work.
+- Files added:
+  apps/marine-guardian-enterprise/src/auth.ts (NextAuth v5 config with Credentials provider, JWT session, role/tenant in session),
+  apps/marine-guardian-enterprise/src/trpc/server.ts (protectedProcedure, tenantProcedure, authorizedTenantProcedure),
+  apps/marine-guardian-enterprise/src/trpc/router.ts (full CRUD: fisherfolk, vessel, permit, catchReport, program, incident, patrol, user, tenant + dashboard stats + settings.switchTenant),
+  apps/marine-guardian-enterprise/src/components/providers/trpc-provider.tsx (client-side tRPC + React Query provider),
+  apps/marine-guardian-enterprise/src/components/shell/sidebar.tsx (tenant-aware navigation with role filtering, inline SVG icons),
+  apps/marine-guardian-enterprise/src/app/[slug]/layout.tsx (tenant shell with sidebar + provider wrapper),
+  apps/marine-guardian-enterprise/src/app/[slug]/page.tsx (dashboard with stats cards),
+  apps/marine-guardian-enterprise/src/app/[slug]/fisherfolk/page.tsx,
+  apps/marine-guardian-enterprise/src/app/[slug]/vessels/page.tsx,
+  apps/marine-guardian-enterprise/src/app/[slug]/permits/page.tsx,
+  apps/marine-guardian-enterprise/src/app/[slug]/catch-reports/page.tsx,
+  apps/marine-guardian-enterprise/src/app/[slug]/programs/page.tsx,
+  apps/marine-guardian-enterprise/src/app/[slug]/incidents/page.tsx,
+  apps/marine-guardian-enterprise/src/app/[slug]/patrols/page.tsx
+- Files modified:
+  apps/marine-guardian-enterprise/src/middleware.ts (enhanced tenant slug routing + auth flow),
+  apps/marine-guardian-enterprise/src/app/[slug]/page.tsx (replaced placeholder with actual dashboard),
+  apps/marine-guardian-enterprise/tsconfig.json (added declaration: false, isolatedModules: false to fix TS2742 portability errors)
+- Files deleted: none
+- Schema/migrations: none
+- Errors encountered:
+  1. TS2742 — auth.ts, middleware.ts, client.ts: "inferred type cannot be named without reference" (isolatedModules + declaration conflict)
+  2. TS2742 router.ts — "tenantId does not exist on context" (authorizedProcedure lacks tenant context)
+  3. Prisma exactOptionalPropertyTypes — nullable fields reject undefined, require null
+  4. lucide-react missing — pnpm store mismatch preventing install
+  5. IncidentStatus enum mismatch — router uses wrong values (IncidentStatus vs actual enum)
+- Errors resolved:
+  1. Added declaration: false + isolatedModules: false to web app tsconfig.json
+  2. Added authorizedTenantProcedure in server.ts that chains tenantProcedure + role check
+  3. Changed all nullable Prisma field assignments from undefined to null (e.g., middleName: input.middleName ?? null)
+  4. Rewrote sidebar with inline SVG icons instead of lucide-react
+  5. Fixed IncidentStatus colors mapping (REPORTED, UNDER_INVESTIGATION, RESOLVED, DISMISSED)
+
+---
+
 ## 2026-03-15 — Phase 0: Bootstrap
 
 - Agent: CLINE

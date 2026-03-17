@@ -5,19 +5,24 @@ import Credentials from "next-auth/providers/credentials"
 import { prisma as db } from "@marine-guardian/db"
 import bcrypt from "bcryptjs"
 import { Role } from "@marine-guardian/shared"
-import type { DefaultUser } from "next-auth"
 
-// Extend the session and JWT types
+// ─── Module augmentations (next-auth v5 beta) ────────────────────────────────
+// Only augment the "next-auth" module — the jwt subpath is not exported in v5 beta.
+// JWT fields are tracked via AppJWT local type + explicit casting in callbacks.
+
 declare module "next-auth" {
   interface Session {
     user: {
       id: string
+      name?: string | null
+      email?: string | null
+      image?: string | null
       tenantId: string | null
       role: Role
       activeTenantSlug: string | null
-    } & DefaultUser
+    }
   }
-  
+
   interface User {
     tenantId?: string | null
     role?: Role
@@ -25,14 +30,20 @@ declare module "next-auth" {
   }
 }
 
-declare module "next-auth/jwt" {
-  interface JWT {
-    id: string
-    tenantId: string | null
-    role: Role
-    activeTenantSlug: string | null
-  }
+// ─── Local JWT shape (avoids next-auth/jwt subpath which isn't exported in beta) ──
+
+type AppJWT = {
+  sub?: string
+  iat?: number
+  exp?: number
+  jti?: string
+  id: string
+  tenantId: string | null
+  role: Role
+  activeTenantSlug: string | null
 }
+
+// ─── Auth config ──────────────────────────────────────────────────────────────
 
 export const authConfig: NextAuthConfig = {
   adapter: PrismaAdapter(db),
@@ -52,74 +63,91 @@ export const authConfig: NextAuthConfig = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
+        if (
+          typeof credentials?.email !== "string" ||
+          typeof credentials?.password !== "string"
+        ) {
           return null
         }
 
         const user = await db.user.findUnique({
-          where: { email: credentials.email as string },
-          include: {
-            memberships: {
-              include: { tenant: true },
-            },
-          },
+          where: { email: credentials.email },
+          include: { memberships: { include: { tenant: true } } },
         })
 
-        if (!user || !user.passwordHash) {
-          return null
-        }
+        if (user == null || !user.passwordHash) return null
 
-        const isValid = await bcrypt.compare(
-          credentials.password as string,
-          user.passwordHash
-        )
+        const isValid = await bcrypt.compare(credentials.password, user.passwordHash)
+        if (!isValid) return null
 
-        if (!isValid) {
-          return null
-        }
+        const activeMembership =
+          user.memberships.find((m) => m.tenantId === user.lastActiveTenantId) ??
+          user.memberships[0]
 
-        // Get most recently used tenant or first membership
-        const activeMembership = user.memberships.find(
-          (m) => m.tenantId === user.lastActiveTenantId
-        ) ?? user.memberships[0]
+        // Prisma's Role is a string-union; shared Role is a TS enum — same values.
+        const role = (activeMembership?.role ?? "VIEWER") as Role
 
         return {
           id: user.id,
           email: user.email,
           name: user.name,
           tenantId: activeMembership?.tenantId ?? null,
-          role: activeMembership?.role ?? Role.VIEWER,
+          role,
           activeTenantSlug: activeMembership?.tenant?.slug ?? null,
         }
       },
     }),
   ],
   callbacks: {
-    async jwt({ token, user, trigger, session }) {
+    // jwt callback — no await, explicit AppJWT cast avoids next-auth/jwt augmentation
+    jwt({ token, user, trigger, session }) {
+      // Cast to our AppJWT shape; both types represent the same JWT object at runtime
+      const t = token as unknown as AppJWT
+
       if (user) {
-        token.id = user.id
-        token.tenantId = user.tenantId
-        token.role = user.role ?? Role.VIEWER
-        token.activeTenantSlug = user.activeTenantSlug
+        t.id = user.id ?? ""
+        t.tenantId = user.tenantId ?? null
+        t.role = user.role ?? Role.VIEWER
+        t.activeTenantSlug = user.activeTenantSlug ?? null
       }
 
-      // Handle session update (e.g., tenant switch)
-      if (trigger === "update" && session) {
-        token.tenantId = session.tenantId
-        token.role = session.role
-        token.activeTenantSlug = session.activeTenantSlug
+      // Handle tenant-switch update
+      if (trigger === "update") {
+        const update = session as {
+          tenantId?: string | null
+          role?: Role
+          activeTenantSlug?: string | null
+        }
+        if (update.tenantId !== undefined) t.tenantId = update.tenantId ?? null
+        if (update.role !== undefined) t.role = update.role
+        if (update.activeTenantSlug !== undefined) {
+          t.activeTenantSlug = update.activeTenantSlug ?? null
+        }
       }
 
-      return token
+      return t
     },
-    async session({ session, token }) {
-      session.user.id = token.id
-      session.user.tenantId = token.tenantId
-      session.user.role = token.role
-      session.user.activeTenantSlug = token.activeTenantSlug
-      return session
+
+    // session callback — no await needed
+    session({ session, token }) {
+      const t = token as unknown as AppJWT
+      // Return a new session object so TypeScript can track the merged type
+      return {
+        ...session,
+        user: {
+          id: t.id,
+          name: session.user?.name ?? null,
+          email: session.user?.email ?? null,
+          image: session.user?.image ?? null,
+          tenantId: t.tenantId,
+          role: t.role,
+          activeTenantSlug: t.activeTenantSlug,
+        },
+      }
     },
   },
-} satisfies NextAuthConfig
+}
+
+// ─── NextAuth exports ─────────────────────────────────────────────────────────
 
 export const { handlers, auth, signIn, signOut } = NextAuth(authConfig)

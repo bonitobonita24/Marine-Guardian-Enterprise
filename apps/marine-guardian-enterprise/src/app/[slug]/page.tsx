@@ -1,176 +1,121 @@
-import { auth } from "../../auth"
+import { headers } from "next/headers"
 import { redirect } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@marine-guardian/ui"
-import { prisma } from "@marine-guardian/db"
+import { auth } from "@/auth"
+import { createTRPCContext } from "@/trpc/server"
+import { appRouter } from "@/trpc/router"
 
-export default async function DashboardPage({
-  params,
-}: {
+interface PageProps {
   params: Promise<{ slug: string }>
+}
+
+// ─── Stat card ────────────────────────────────────────────────────────────────
+
+function StatCard({
+  label,
+  value,
+  sub,
+  color,
+}: {
+  label: string
+  value: number | string
+  sub?: string
+  color: string
 }) {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</p>
+      <p className={`mt-1.5 text-3xl font-bold ${color}`}>{value.toLocaleString()}</p>
+      {sub != null && <p className="mt-1 text-xs text-slate-400">{sub}</p>}
+    </div>
+  )
+}
+
+// ─── Page (Server Component) ──────────────────────────────────────────────────
+
+export default async function DashboardPage({ params }: PageProps) {
   const session = await auth()
+  if (session == null) redirect("/login")
+
   const { slug } = await params
 
-  if (!session?.user) {
-    redirect("/login")
+  const ctx = await createTRPCContext({ headers: await headers() })
+  const caller = appRouter.createCaller(ctx)
+
+  let stats
+  try {
+    stats = await caller.dashboard.lguStats()
+  } catch {
+    stats = null
   }
-
-  // Verify user has access to this tenant
-  const membership = await prisma.tenantMembership.findFirst({
-    where: {
-      userId: session.user.id,
-      tenant: { slug },
-      isActive: true,
-    },
-    include: { tenant: true },
-  })
-
-  if (!membership) {
-    redirect("/")
-  }
-
-  // Get dashboard stats
-  const [
-    fisherfolkCount,
-    vesselCount,
-    permitCount,
-    incidentCount,
-    recentIncidents,
-  ] = await Promise.all([
-    prisma.fisherfolk.count({ where: { tenantId: membership.tenantId } }),
-    prisma.vessel.count({ where: { tenantId: membership.tenantId } }),
-    prisma.permit.count({ where: { tenantId: membership.tenantId } }),
-    prisma.incident.count({ where: { tenantId: membership.tenantId } }),
-    prisma.incident.findMany({
-      where: { tenantId: membership.tenantId },
-      orderBy: { createdAt: "desc" },
-      take: 5,
-      include: { reportedBy: true },
-    }),
-  ])
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              {membership.tenant.name}
-            </h1>
-            <p className="text-sm text-gray-500">
-              {membership.tenant.type} Dashboard
-            </p>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">
-              {session.user.name}
-            </span>
-            <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-              {membership.role}
-            </span>
-          </div>
+    <div className="p-8">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
+        <p className="mt-1 text-sm text-slate-500">
+          {slug.toUpperCase()} · {session.user.role}
+        </p>
+      </div>
+
+      {stats == null ? (
+        <div className="rounded-xl border border-red-100 bg-red-50 p-6 text-sm text-red-600">
+          Could not load statistics. Check database connection.
         </div>
-      </header>
-
-      {/* Main content */}
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500">
-                Total Fisherfolk
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-gray-900">
-                {fisherfolkCount}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500">
-                Registered Vessels
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-gray-900">
-                {vesselCount}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500">
-                Active Permits
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-gray-900">
-                {permitCount}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500">
-                Total Incidents
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-gray-900">
-                {incidentCount}
-              </div>
-            </CardContent>
-          </Card>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <StatCard
+            label="Registered Fisherfolk"
+            value={stats.fisherfolkCount}
+            sub="Active registrations"
+            color="text-blue-700"
+          />
+          <StatCard
+            label="Active Vessels"
+            value={stats.vesselCount}
+            sub="In fleet"
+            color="text-teal-700"
+          />
+          <StatCard
+            label="Approved Permits"
+            value={stats.activePermitCount}
+            sub={`of ${stats.permitCount} total`}
+            color="text-green-700"
+          />
+          <StatCard
+            label="Total Catch"
+            value={`${stats.totalCatchKg.toFixed(1)} kg`}
+            sub="All time"
+            color="text-amber-700"
+          />
+          <StatCard
+            label="Incidents"
+            value={stats.incidentCount}
+            sub="Reported"
+            color="text-red-700"
+          />
         </div>
+      )}
 
-        {/* Recent Incidents */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Incidents</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {recentIncidents.length === 0 ? (
-              <p className="text-gray-500 text-sm">No recent incidents</p>
-            ) : (
-              <div className="space-y-4">
-                {recentIncidents.map((incident) => (
-                  <div
-                    key={incident.id}
-                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
-                  >
-                    <div>
-                      <p className="font-medium text-gray-900">
-                        {incident.violatorName}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {incident.description.substring(0, 100)}...
-                      </p>
-                    </div>
-                    <span
-                      className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        incident.status === "REPORTED"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : incident.status === "RESOLVED"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {incident.status}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </main>
+      <div className="mt-10 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="mb-4 text-base font-semibold text-slate-900">Quick Actions</h2>
+        <div className="flex flex-wrap gap-3">
+          {[
+            { href: `/${slug}/fisherfolk`, label: "Register Fisherfolk" },
+            { href: `/${slug}/vessels`, label: "Add Vessel" },
+            { href: `/${slug}/permits`, label: "New Permit" },
+            { href: `/${slug}/catch-reports`, label: "Log Catch" },
+            { href: `/${slug}/incidents`, label: "Report Incident" },
+          ].map((action) => (
+            <a
+              key={action.href}
+              href={action.href}
+              className="inline-flex items-center rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 transition-colors"
+            >
+              {action.label}
+            </a>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }

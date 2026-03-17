@@ -21,7 +21,10 @@
         "./src/*"
       ]
     },
-    "noEmit": true
+    "noEmit": true,
+    "declaration": false,
+    "declarationMap": false,
+    "isolatedModules": false
   },
   "include": [
     "next-env.d.ts",
