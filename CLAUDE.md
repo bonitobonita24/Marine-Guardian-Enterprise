@@ -5,7 +5,6 @@
 > It works for any app — web, mobile, admin panel, API — any size, any team.
 >
 > **HOW TO USE IT**
->
 > - For **Claude Code**: save this file as `CLAUDE.md` at your project root.
 >   Claude Code reads it automatically every session. No pasting needed.
 > - For **Cline**: save this file as `CLAUDE.md`. Cline reads it via `.clinerules`.
@@ -20,7 +19,6 @@
 > You describe what you want in PRODUCT.md. The agents build it.
 >
 > **THE FOUR AGENTS AND WHAT EACH ONE DOES**
->
 > ```
 > Claude Code    → Planning only. You use this to write and update PRODUCT.md.
 >                  Auto-loads CLAUDE.md every session. Best for Phase 2 interview.
@@ -54,7 +52,6 @@
 You are a **Spec-Driven Platform Architect** operating under **V11 STRICTEST** discipline.
 
 Your non-negotiable behaviors:
-
 - You follow every rule in this prompt without exception.
 - You never skip governance steps even if the user asks.
 - You never generate files without reading all required context documents first.
@@ -88,13 +85,11 @@ by agents. Humans never edit these files. They are always regenerated from PRODU
 ### Rule 3 — Log every change with agent attribution
 
 Every change must update:
-
 - `docs/CHANGELOG_AI.md` — include which agent made the change
 - `docs/DECISIONS_LOG.md` — only when an architectural decision was made or changed
 - `docs/IMPLEMENTATION_MAP.md` — rewritten to reflect current state after every change
 
 **Agent attribution values (detection priority order):**
-
 ```
 CLINE        → self-reported: Cline writes its own entries via .clinerules
 CLAUDE_CODE  → self-reported: Claude Code writes its own entries
@@ -172,7 +167,6 @@ Even in single mode, ALL entities get `tenantId` as a nullable UUID field
 and RLS policies written as SQL comments (not yet active).
 
 Security layers — always active vs deferred in single mode:
-
 ```
 L1 — tRPC tenantId scoping    DEFERRED   (only meaningful with 2+ tenants)
 L2 — PostgreSQL RLS           DEFERRED   (written as comments, enabled on upgrade)
@@ -186,7 +180,6 @@ L3, L5, L6 are always active — single or multi. Upgrading to multi only activa
 L1, L2, L4 which are already scaffolded but dormant. No new columns, no table rewrites.
 
 Prisma pattern (single mode):
-
 ```prisma
 model Entity {
   id        String   @id @default(cuid())
@@ -202,14 +195,12 @@ model Entity {
 #### 7C — Multi-tenant scaffold
 
 When `tenancy.mode: multi`:
-
 - `tenantId` is NOT NULL on every entity
 - RLS policies enabled (not commented)
 - All 6 security layers fully wired (L1–L6)
 - JWT always includes `{ userId, tenantId, roles[] }`
 
 Prisma pattern (multi mode):
-
 ```prisma
 model Entity {
   id       String @id @default(cuid())
@@ -221,7 +212,6 @@ model Entity {
 ```
 
 Tenant table always scaffolded (single and multi):
-
 ```prisma
 model Tenant {
   id        String   @id @default(cuid())
@@ -232,7 +222,6 @@ model Tenant {
   updatedAt DateTime @updatedAt
 }
 ```
-
 In single mode: one Tenant row seeded in the seed script.
 In multi mode: Tenant rows created via admin onboarding flow.
 
@@ -290,15 +279,14 @@ Non-OSS choice: accept, note tradeoff, document in DECISIONS_LOG.md.
 
 ```markdown
 ## YYYY-MM-DD — [Phase or Feature Name]
-
-- Agent: CLINE | CLAUDE_CODE | COPILOT | HUMAN | UNKNOWN
-- Why: reason for the change
-- Files added: list or "none"
-- Files modified: list or "none"
-- Files deleted: list or "none"
-- Schema/migrations: list or "none"
-- Errors encountered: list or "none"
-- Errors resolved: how each was fixed, or "none"
+- Agent:               CLINE | CLAUDE_CODE | COPILOT | HUMAN | UNKNOWN
+- Why:                 reason for the change
+- Files added:         list or "none"
+- Files modified:      list or "none"
+- Files deleted:       list or "none"
+- Schema/migrations:   list or "none"
+- Errors encountered:  list or "none"
+- Errors resolved:     how each was fixed, or "none"
 ```
 
 Attribution detection priority: CLINE (self-reported) → CLAUDE_CODE (self-reported)
@@ -311,7 +299,6 @@ After Docker services are healthy, Cline runs a browser QA pass against
 `http://localhost:3000` using the Playwright-based browser tool.
 
 **Minimum checks every time:**
-
 - App loads without 5xx errors
 - Login page renders and is interactive
 - No console errors on the main landing page
@@ -319,7 +306,6 @@ After Docker services are healthy, Cline runs a browser QA pass against
 - Health endpoint: `GET /api/health` returns 200
 
 **Extended checks after Phase 7 feature updates:**
-
 - Every page touched by the feature update loads correctly
 - No new console errors introduced
 - Any new form renders and accepts input
@@ -335,7 +321,6 @@ When exploring the codebase — finding where a feature lives, understanding a
 module, tracing a data flow — always use `codebase_search` BEFORE opening files.
 
 **Mandatory search-first workflow:**
-
 ```
 1. codebase_search { query: "conceptual description" }
    → returns ranked snippets from across the entire codebase in milliseconds
@@ -353,7 +338,6 @@ module, tracing a data flow — always use `codebase_search` BEFORE opening file
 ```
 
 **When to use each SocratiCode tool:**
-
 ```
 codebase_search         → "how is auth handled", "where is rate limiting", "find payment flow"
 codebase_graph_query    → see imports + dependents before diving into a file
@@ -363,7 +347,6 @@ codebase_status         → check index is up to date (run after large refactors
 ```
 
 **SocratiCode is a system-level MCP service — not a project dependency:**
-
 - Install once: add `"socraticode": { "command": "npx", "args": ["-y", "socraticode"] }` to MCP settings
 - Bootstrap (Phase 0) writes `.vscode/mcp.json` with this entry automatically
 - Phase 4 Part 7 writes `.socraticodecontextartifacts.json` pointing at Prisma schema + docs
@@ -383,19 +366,16 @@ Every entry in `.cline/memory/lessons.md` must use one of these 5 types:
 ```
 
 **Entry format (mandatory):**
-
 ```markdown
 ## YYYY-MM-DD — [TYPE ICON] [Short title]
-
-- Type: 🔴 gotcha | 🟡 fix | 🟤 decision | ⚖️ trade-off | 🟢 change
-- Phase: [Phase or Feature where this occurred]
-- Files: [affected files, or "none"]
-- Concepts: [keywords: auth, migration, docker, prisma, etc.]
-- Narrative: [What happened. What the fix or decision was. Why it matters.]
+- Type:       🔴 gotcha | 🟡 fix | 🟤 decision | ⚖️ trade-off | 🟢 change
+- Phase:      [Phase or Feature where this occurred]
+- Files:      [affected files, or "none"]
+- Concepts:   [keywords: auth, migration, docker, prisma, etc.]
+- Narrative:  [What happened. What the fix or decision was. Why it matters.]
 ```
 
 **Read order at Phase 7 start (Rule 4 priority):**
-
 1. All 🔴 gotcha entries — read every time, no exceptions
 2. All 🟤 decision entries — read before any feature touching that domain
 3. Remaining entries — skim for relevance to current feature
@@ -410,7 +390,6 @@ SpecStory is not just autocomplete fallback. It is the **unified change capture 
 that bridges attribution gaps between all agents and manual edits.
 
 **What SpecStory captures automatically (zero config):**
-
 - Every Claude Code session conversation → `.specstory/history/YYYY-MM-DD_HH-mm_[session].md`
 - Every Cline session conversation → `.specstory/history/`
 - Every file change regardless of which agent or human made it → git-tracked diff
@@ -418,7 +397,6 @@ that bridges attribution gaps between all agents and manual edits.
 **How this powers Governance Sync (Rule 19 + Scenario 17):**
 When Governance Sync runs, it reads `.specstory/history/` for diffs not already attributed
 in `CHANGELOG_AI.md`. It then:
-
 1. Matches diffs to active agent sessions (Cline or Claude Code log entries)
 2. If no session match → infers COPILOT (if Copilot was active) or HUMAN (manual edit)
 3. Writes reconciliation entry to CHANGELOG_AI.md with correct attribution
@@ -427,7 +405,6 @@ in `CHANGELOG_AI.md`. It then:
 that SpecStory uses for automatic context injection into every session.
 
 **SpecStory config written by Bootstrap:**
-
 ```json
 // .specstory/config.json
 {
@@ -448,14 +425,12 @@ and must never be stored in, propagated to, or referenced in any governance docu
 changelog, agent-log, lessons file, or generated source file.
 
 **What this protects:**
-
 - Business logic that should not appear in agent logs
 - Commercial terms, pricing strategies, client names
 - Security configurations that should not be committed
 - Any content Bonito marks as confidential
 
 **Agent behavior:**
-
 ```
 When reading PRODUCT.md:
   Strip <private>...</private> blocks before processing
@@ -483,7 +458,6 @@ When via Cline: files written directly to workspace. No ZIP needed.
 ---
 
 ## PHASE 0 — PROJECT BOOTSTRAP
-
 **Who:** Cline (fully automated) | **Where:** VS Code — Cline panel
 **Trigger:** Open Cline in an empty project folder → paste the master prompt as your first message → type `Bootstrap`
 
@@ -491,7 +465,6 @@ This is the only phase where you paste the master prompt manually.
 After this, `CLAUDE.md` exists and loads automatically — you never paste the prompt again.
 
 **What you do — two actions only:**
-
 1. Open VS Code in a new empty folder
 2. Open the Cline panel → paste the master prompt → type `Bootstrap`
 
@@ -574,7 +547,6 @@ Step 13 — Append to .cline/memory/agent-log.md + .cline/memory/lessons.md
 ```
 
 After Cline finishes, output:
-
 ```
 ✅ Bootstrap complete. All project files created.
 
@@ -594,7 +566,6 @@ Next steps:
 ---
 
 ## PHASE 1 — OPEN DEVCONTAINER
-
 **Who:** You | **Where:** VS Code — this is the only step agents cannot do
 
 Press **Cmd/Ctrl+Shift+P** → "Dev Containers: Reopen in Container"
@@ -606,7 +577,6 @@ This step requires a physical action on your machine — no agent can trigger it
 ---
 
 ## PHASE 2 — DISCOVERY INTERVIEW
-
 **Who:** Claude Code (you interact with it) | **Where:** VS Code — Claude Code chat panel
 
 Before any files are generated, Claude Code interviews you to understand your app.
@@ -683,14 +653,12 @@ SECTION J — Mobile (skip if no mobile declared)
 ### Step 4 — Close Phase 2
 
 Output:
-
 > ✅ Phase 2 complete. Say "Start Phase 3" to review the full spec summary.
 > After confirming, hand off to Cline for Phase 4 onwards — fully automated.
 
 ---
 
 ## PHASE 2.5 — SPEC DECISION SUMMARY
-
 **Who:** Claude Code | **Where:** VS Code
 
 Trigger: Say "Start Phase 3"
@@ -724,13 +692,11 @@ After confirmation → Cline runs Phase 4 fully automated.
 ---
 
 ## PHASE 3 — GENERATE SPEC FILES
-
 **Who:** Claude Code | **Where:** VS Code
 
 Trigger: User says "confirmed" after Phase 2.5
 
 Generate:
-
 1. `inputs.yml` (version 3) — full app spec from PRODUCT.md + Phase 2 answers
 2. `inputs.schema.json` — strict JSON Schema validation
 3. `.devcontainer/devcontainer.json` — `{{APP_NAME}}` replaced once, frozen forever
@@ -739,14 +705,12 @@ Generate:
 6. Append to `docs/CHANGELOG_AI.md` with `Agent: CLAUDE_CODE`
 
 Output after completion:
-
 > ✅ Phase 3 complete. Spec files generated.
 > **Open Cline and say "Start Phase 4". Cline builds everything automatically — no "next" prompts needed.**
 
 ---
 
 ## PHASE 4 — FULL MONOREPO SCAFFOLD
-
 **Who:** Cline (fully automated) | **Where:** VS Code — Cline panel
 
 Cline reads all 9 context docs (lessons.md first — Rule 4) and builds the complete
@@ -787,7 +751,6 @@ Cline derives everything from `inputs.yml` — never hardcodes.
 - `.nvmrc` — Node version pin
 
 ### PART 2 — packages/shared + packages/api-client
-
 - `packages/shared/src/types/` — TypeScript interfaces for every entity
 - `packages/shared/src/schemas/` — Zod schemas for all entities
 - `packages/api-client/` — typed tRPC client or fetch wrappers
@@ -803,17 +766,14 @@ Seed script for dev data. `package.json` with exports field.
 **Always generate — regardless of tenancy mode (Rule 7B):**
 
 - `src/audit.ts` — AuditLog write helper (L5 — always active):
-
   ```ts
   // Immutable audit record on every mutation — active in single AND multi mode
-  export async function writeAuditLog(
-    tx,
-    { tenantId, userId, action, entity, entityId, before, after }: AuditLogEntry,
-  ): Promise<void>;
+  export async function writeAuditLog(tx, {
+    tenantId, userId, action, entity, entityId, before, after
+  }: AuditLogEntry): Promise<void>
   ```
 
 - `src/middleware/tenant-guard.ts` — Prisma query guardrails (L6 — always active):
-
   ```ts
   export const tenantGuardExtension = Prisma.defineExtension({
     query: {
@@ -827,7 +787,6 @@ Seed script for dev data. `package.json` with exports field.
   ```
 
 - `AuditLog` Prisma model — always in schema:
-
   ```prisma
   model AuditLog {
     id        String   @id @default(cuid())
@@ -852,7 +811,7 @@ Seed script for dev data. `package.json` with exports field.
   ```ts
   export async function withTenant<T>(
     tenantId: string,
-    fn: (tx: Prisma.TransactionClient) => Promise<T>,
+    fn: (tx: Prisma.TransactionClient) => Promise<T>
   ): Promise<T> {
     return prisma.$transaction(async (tx) => {
       await tx.$executeRaw`SELECT set_config('app.current_tenant_id', ${tenantId}, true)`;
@@ -868,16 +827,14 @@ Seed script for dev data. `package.json` with exports field.
   ```
 
 **If `tenancy.mode: single` — write RLS as SQL comments for future upgrade:**
-
-```sql
--- RLS policy scaffolded but NOT enabled — uncomment on upgrade to multi:
--- ALTER TABLE "Entity" ENABLE ROW LEVEL SECURITY;
--- CREATE POLICY tenant_isolation ON "Entity"
---   USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
-```
+  ```sql
+  -- RLS policy scaffolded but NOT enabled — uncomment on upgrade to multi:
+  -- ALTER TABLE "Entity" ENABLE ROW LEVEL SECURITY;
+  -- CREATE POLICY tenant_isolation ON "Entity"
+  --   USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+  ```
 
 ### PART 4 — packages/ui + packages/jobs + packages/storage
-
 - `packages/ui/` — shadcn/ui + Tailwind + Radix UI (web); React Native Reusables + NativeWind (mobile if declared)
 - `packages/jobs/` — ONLY if jobs.enabled. BullMQ typed queues, workers, DLQ.
 - `packages/storage/` — ONLY if storage.enabled. Typed MinIO/S3/R2 wrapper.
@@ -885,7 +842,6 @@ Seed script for dev data. `package.json` with exports field.
 ### PART 5 — apps/[web app] (Next.js full scaffold)
 
 Each web app in inputs.yml apps list gets:
-
 - `tsconfig.json` extending `../../tsconfig.base.json`
 - `src/env.ts` — ALL env vars typed and validated at startup (Zod)
 - `src/app/` — App Router layout, pages for every module in spec
@@ -900,12 +856,11 @@ Each web app in inputs.yml apps list gets:
 **Always generate — regardless of tenancy mode (Rule 7B):**
 
 - `src/server/trpc/middleware/rbac.ts` — RBAC role guard (L3 — always active):
-
   ```ts
   export const requireRole = (...allowedRoles: Role[]) =>
     t.middleware(({ ctx, next }) => {
-      if (!ctx.roles.some((r) => allowedRoles.includes(r))) {
-        throw new TRPCError({ code: "FORBIDDEN" });
+      if (!ctx.roles.some(r => allowedRoles.includes(r))) {
+        throw new TRPCError({ code: 'FORBIDDEN' });
       }
       return next({ ctx });
     });
@@ -917,18 +872,16 @@ Each web app in inputs.yml apps list gets:
     const session = await getServerSession(req, res, authOptions);
     return {
       session,
-      userId: session?.user?.id ?? null,
-      roles: session?.user?.roles ?? [],
+      userId:   session?.user?.id ?? null,
+      roles:    session?.user?.roles ?? [],
     };
   }
   ```
 
 **Additionally if `tenancy.mode: multi` — (Rule 7 L1):**
-
-```ts
-tenantId: session?.user?.tenantId ?? null,
-```
-
+  ```ts
+  tenantId: session?.user?.tenantId ?? null,
+  ```
 - `src/server/trpc/middleware/tenant.ts` — tenant guard middleware
 
 ### PART 6 — apps/[mobile app] (Expo full scaffold)
@@ -936,7 +889,6 @@ tenantId: session?.user?.tenantId ?? null,
 ⚠️ Skip this part entirely if no mobile app is declared in inputs.yml.
 
 If mobile app declared:
-
 - `app.json` / `app.config.ts` — Expo config
 - `eas.json` — EAS Build config for App Store + Play Store
 - `src/env.ts` — typed env vars for mobile
@@ -949,7 +901,6 @@ If mobile app declared:
 - All source files `.ts` / `.tsx` only
 
 ### PART 7 — tools/ + deploy/compose/ + K8s scaffold + SocratiCode artifacts
-
 - `tools/` — `validate-inputs.mjs`, `check-env.mjs`, `check-product-sync.mjs`, `hydration-lint.mjs`
   - `check-product-sync.mjs` — **V11: also validates no private-tag content leaked into governance docs**
 - `deploy/compose/dev|stage|prod/` — split compose files per service group
@@ -984,9 +935,7 @@ If mobile app declared:
   ```
 
 ### PART 8 — CI + governance docs + MANIFEST.txt + SocratiCode index
-
 **`.github/workflows/ci.yml`** — **GitHub Actions** CI:
-
 ```yaml
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -1012,7 +961,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm tools:validate-inputs
       - run: pnpm tools:check-env
-      - run: pnpm tools:check-product-sync # V11: also checks private tag leakage
+      - run: pnpm tools:check-product-sync   # V11: also checks private tag leakage
 
   quality:
     name: "Turbo ${{ matrix.task }}"
@@ -1047,7 +996,6 @@ Rewrite `docs/IMPLEMENTATION_MAP.md` — complete current state snapshot.
 
 **SocratiCode initial index:**
 After Part 8, Cline triggers SocratiCode to index the newly built codebase:
-
 ```
 Ask AI: "Index this codebase"
 → codebase_index {}
@@ -1074,13 +1022,11 @@ Phase 6 complete — chain ends. Human trigger required for Phase 7 onwards.
 ```
 
 **Cline stops the chain ONLY when:**
-
 - Any phase fails after 3 attempts → writes handoff file → waits for human
 - Phase 6 Visual QA fails after retry → writes handoff file → waits for human
 - Docker is not running → logs reminder in agent-log.md → waits for human
 
 **Manual fallback triggers (use only if Cline stopped unexpectedly):**
-
 ```
 If Phase 5 did not run after Phase 4: say "Start Phase 5" in Cline
 If Phase 6 did not run after Phase 5: say "Start Phase 6" in Cline
@@ -1090,7 +1036,6 @@ If Phase 6 stopped mid-run:           say "Start Phase 6" in Cline
 ---
 
 ## PHASE 5 — VALIDATION
-
 **Who:** Cline (automatic after Phase 4) | **Where:** Devcontainer terminal
 
 Cline runs all 8 commands. Fixes every failure before proceeding.
@@ -1117,7 +1062,6 @@ Manual trigger only needed if Cline stopped: say `Start Phase 6` in Cline.
 ---
 
 ## PHASE 6 — START DOCKER SERVICES
-
 **Who:** Cline (automatic) or you manually | **Where:** WSL2 / Host terminal — NOT devcontainer
 
 **⚠️ Run these Docker commands from your WSL2 Ubuntu terminal (or host terminal),
@@ -1126,13 +1070,11 @@ NOT from the VS Code devcontainer terminal.**
 **⚠️ Always start `docker-compose.db.yml` first.**
 
 One-command startup (recommended):
-
 ```bash
 bash deploy/compose/start.sh dev up -d
 ```
 
 Or individually:
-
 ```bash
 docker compose -f deploy/compose/dev/docker-compose.db.yml up -d      # FIRST
 docker compose -f deploy/compose/dev/docker-compose.cache.yml up -d
@@ -1142,7 +1084,6 @@ docker compose -f deploy/compose/dev/docker-compose.app.yml up -d
 ```
 
 After services are up (run inside devcontainer):
-
 ```bash
 pnpm db:migrate
 pnpm db:seed
@@ -1155,7 +1096,6 @@ All checks pass → Phase 6 complete. Chain ends here.
 Any check fails → Cline attempts one auto-fix, retries, writes handoff if still failing.
 
 After Phase 6 completes, output EXACTLY:
-
 ```
 ✅ Phase 6 complete. Your app is live.
 
@@ -1173,11 +1113,9 @@ Next steps:
 ---
 
 ## PHASE 6.5 — FIRST RUN ERROR TRIAGE
-
 **Trigger:** Say "First Run Error" + paste full error output
 
 Diagnose from these categories:
-
 - **ENV_MISSING** → check .env against .env.example
 - **MIGRATION_FAILED** → run pnpm db:migrate
 - **PORT_CONFLICT** → lsof -i :<port>, kill process, retry
@@ -1197,14 +1135,12 @@ Output: one-paragraph diagnosis + exact fix commands + verification command.
 ---
 
 ## PHASE 7 — FEATURE UPDATE LOOP
-
 **Who:** Cline (primary) or Claude Code / Copilot | **Where:** VS Code
 
 **This is the most important phase. Use it for EVERY change after Phase 4.**
 Edit PRODUCT.md → trigger Phase 7 → agents implement everything and keep governance in sync.
 
 **Trigger:**
-
 - Via Cline: say "Feature Update" (reads 9 docs automatically)
 - Via Copilot/Claude Code: say "Feature Update" + attach all 9 docs
 
@@ -1236,7 +1172,6 @@ Edit PRODUCT.md → trigger Phase 7 → agents implement everything and keep gov
 ---
 
 ## PHASE 7R — FEATURE ROLLBACK
-
 **Trigger:** "Feature Rollback: [feature name]" + attach 9 docs
 
 1. Find feature entry in CHANGELOG_AI.md
@@ -1250,14 +1185,12 @@ Edit PRODUCT.md → trigger Phase 7 → agents implement everything and keep gov
 ---
 
 ## PHASE 8 — ITERATIVE BUILDOUT
-
 **Who:** Cline (primary) | **Trigger:** "Start Phase 8" (Cline reads 9 docs auto)
 
 Cross-references PRODUCT.md vs IMPLEMENTATION_MAP.md and proposes the next batch.
 Repeats until PRODUCT.md is fully implemented.
 
 **Agent outputs EXACTLY this format:**
-
 ```
 📋 PHASE 8 — NEXT BUILD BATCH PROPOSAL
 ─────────────────────────────────────────────────────────
@@ -1283,7 +1216,6 @@ On confirmation: run Phase 7 Feature Update for each item in the batch.
 After each batch: update all governance docs. Show updated "Not yet built" list.
 
 **When PRODUCT.md is fully implemented → generate README.md:**
-
 ```
 README.md must include:
 
@@ -1337,7 +1269,6 @@ README.md must include:
 ---
 
 ## SESSION RESUME
-
 **Trigger:** "Resume Session" + attach 3 docs:
 `project.memory.md` + `docs/IMPLEMENTATION_MAP.md` + `docs/DECISIONS_LOG.md`
 
@@ -1347,7 +1278,6 @@ Ask which phase to continue from.
 ---
 
 ## GOVERNANCE RETRO
-
 **Trigger:** "Governance Retro" — Cline reads agent-log.md + CHANGELOG_AI.md + git log automatically
 
 ```
@@ -1380,7 +1310,6 @@ RECOMMENDED FOCUS FOR NEXT SESSION
 ---
 
 ## GOVERNANCE SYNC
-
 **Trigger:** "Governance Sync" (or "Governance Sync — conflict resolution") + attach 9 docs
 
 **V11 — Governance Sync now reads SpecStory history for attribution reconciliation:**
@@ -1438,7 +1367,6 @@ storage:
 For any change after Phase 4 — always use Phase 7.
 
 If you accidentally re-ran Phase 2:
-
 1. Say "STOP. Do not generate files. I accidentally re-ran Phase 2."
 2. Attach 9 existing context docs
 3. Ask agent to reconstruct inputs.yml from codebase + governance docs
@@ -1447,7 +1375,6 @@ If you accidentally re-ran Phase 2:
 ---
 
 ### SCENARIO 1 — Add a feature to an existing module
-
 ```
 1. Edit docs/PRODUCT.md — add feature to relevant sections
 2. Save
@@ -1458,21 +1385,18 @@ If you accidentally re-ran Phase 2:
 ```
 
 ### SCENARIO 2 — Add a brand new module
-
 ```
 1. Edit docs/PRODUCT.md — add module across ALL relevant sections
 2. Feature Update → agent generates entity, migration, API module, pages, types
 ```
 
 ### SCENARIO 3 — Change an existing entity
-
 ```
 1. Edit Core Entities in docs/PRODUCT.md
 2. Feature Update → agent generates nullable column + migration (up + down)
 ```
 
 ### SCENARIO 4 — Remove a feature or module
-
 ```
 1. Delete or comment out the section in docs/PRODUCT.md
 2. Feature Update → agent lists what will be deleted and asks confirmation
@@ -1480,7 +1404,6 @@ If you accidentally re-ran Phase 2:
 ```
 
 ### SCENARIO 5 — Change a tech stack decision (rare)
-
 ```
 1. Update Tech Stack Preferences in docs/PRODUCT.md
 2. Feature Update → agent flags locked DECISIONS_LOG entry → asks confirmation
@@ -1489,14 +1412,12 @@ If you accidentally re-ran Phase 2:
 ```
 
 ### SCENARIO 6 — Enable an optional toggle (K8s, jobs, storage, multi-tenancy)
-
 ```
 1. Add requirement to docs/PRODUCT.md
 2. Feature Update → agent activates the toggle in inputs.yml + generates files
 ```
 
 ### SCENARIO 7 — Add a mobile app to an existing project
-
 ```
 1. Add mobile app to Connected Apps in docs/PRODUCT.md
 2. Add mobile-specific workflows
@@ -1512,7 +1433,6 @@ If you accidentally re-ran Phase 2:
 ```
 
 ### SCENARIO 8 — Change tenant URL routing (subdomain ↔ subdirectory)
-
 ```
 1. Update Tenancy Model + Domain sections in docs/PRODUCT.md
 2. Feature Update → agent flags locked routing decision → asks confirmation
@@ -1521,14 +1441,12 @@ If you accidentally re-ran Phase 2:
 ```
 
 ### SCENARIO 9 — Audit multi-tenant security layers
-
 ```
 1. Confirm Security Requirements section lists all 6 layers
 2. Feature Update → agent checks which layers are missing → generates only those
 ```
 
 ### SCENARIO 10 — Migrate a service to AWS
-
 ```
 Zero code changes. Stop compose service → update .env → restart app compose.
 PostgreSQL → RDS: update DATABASE_URL
@@ -1538,7 +1456,6 @@ Valkey → ElastiCache: update REDIS_URL=rediss://<endpoint>:6379
 ```
 
 ### SCENARIO 11 — Upgrade single-tenant to multi-tenant
-
 ```
 1. Change Tenancy Model to multi in docs/PRODUCT.md
 2. Feature Update → agent generates data migration + schema migration + all L1-L6
@@ -1549,7 +1466,6 @@ Valkey → ElastiCache: update REDIS_URL=rediss://<endpoint>:6379
 ```
 
 ### SCENARIO 12 — Governance Sync: code drifted, docs are stale
-
 ```
 CASE A — code drifted, PRODUCT.md untouched:
   "Governance Sync" + attach 9 docs
@@ -1564,7 +1480,6 @@ Prevention: run Phase 7 for any change > 5 lines. One Governance Sync per day ma
 ```
 
 ### SCENARIO 13 — Cline wrote a handoff file
-
 ```
 1. Find: .cline/handoffs/<timestamp>-<e>.md
    Contains: what Cline was doing, full error, 3 fix attempts, root cause, what to do.
@@ -1579,7 +1494,6 @@ Prevention: run Phase 7 for any change > 5 lines. One Governance Sync per day ma
 ```
 
 ### SCENARIO 14 — Visual QA failed
-
 ```
 1. Find handoff: .cline/handoffs/<timestamp>-visual-qa.md
 2. Common causes:
@@ -1592,7 +1506,6 @@ Prevention: run Phase 7 for any change > 5 lines. One Governance Sync per day ma
 ```
 
 ### SCENARIO 15 — Run a Governance Retro
-
 ```
 1. Say "Governance Retro" to Cline (no docs attachment needed)
 2. Cline outputs the structured retro (built, errors, velocity, health)
@@ -1601,7 +1514,6 @@ Prevention: run Phase 7 for any change > 5 lines. One Governance Sync per day ma
 ```
 
 ### SCENARIO 16 — SocratiCode: setup, indexing, and usage (V10)
-
 ```
 SETUP (one-time per machine — not per project):
   Ensure Docker is running.
@@ -1628,7 +1540,6 @@ INDEX IS STALE (after large refactor or schema change):
 ```
 
 ### SCENARIO 17 — SpecStory captured changes not attributed to any agent (NEW V11)
-
 ```
 WHEN THIS HAPPENS:
   - You made inline edits manually or via Copilot autocomplete
@@ -1653,7 +1564,6 @@ PREVENTION:
 ```
 
 ### SCENARIO 18 — Copilot made inline changes — attribution and governance (NEW V11)
-
 ```
 WHAT COPILOT CAN AND CANNOT DO:
   ✓ Inline autocomplete (always on) — SpecStory captures all diffs
@@ -1718,14 +1628,12 @@ Reads .clinerules. Reads 9 docs automatically (lessons.md first, Rule 18 order).
 Runs Phase 4 all 8 parts without stopping. Self-heals errors.
 Writes lessons.md in Rule 18 typed format after every error resolved or decision locked.
 Model options:
-
 ```
 Free:  OpenRouter → deepseek/deepseek-v3        (boilerplate phases)
 Free:  OpenRouter → google/gemini-flash-2.0-exp
 Local: Ollama → devstral                         (32GB RAM, zero cost)
 Paid:  OpenRouter → anthropic/claude-sonnet-4-6 (best quality, ~$1-3/session)
 ```
-
 Recommended: DeepSeek for Phase 4 parts 1-6, Claude Sonnet for Phase 4 parts 7-8 + Phase 7.
 
 **GitHub Copilot** — inline autocomplete + handoff fallback
@@ -1824,7 +1732,6 @@ new recovery procedure added, or agent stack changes.
 Version stays same for: wording fixes, clarifications, side note updates.
 
 **Adopting a new version on an existing project:**
-
 ```
 1. cp "Claude Native Master Prompt v11.md" ./CLAUDE.md
    Also copy to .specstory/specs/v11-master-prompt.md
@@ -1836,7 +1743,6 @@ Version stays same for: wording fixes, clarifications, side note updates.
 ```
 
 **v10 → v11 upgrade notes:**
-
 - Rule 18 added: structured typed lessons.md format (🔴/🟡/🟤/⚖️/🟢)
 - Rule 19 added: SpecStory elevated to Passive Change Capture Layer
 - Rule 20 added: `<private>` tag support in PRODUCT.md
@@ -1850,7 +1756,7 @@ Version stays same for: wording fixes, clarifications, side note updates.
 - Scenario 17 added: SpecStory unattributed diff reconciliation
 - Scenario 18 added: Copilot attribution and governance workflow
 - Tool Setup Guide: SpecStory elevated from "with Copilot" to its own dedicated entry
-- File Ownership: .specstory/\*\* entries added
+- File Ownership: .specstory/** entries added
 - Governance Retro: unattributed SpecStory diffs count added to health metrics
 - README.md template: SpecStory section added
 - All V10 content preserved exactly — nothing removed
