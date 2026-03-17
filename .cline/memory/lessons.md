@@ -1,3 +1,59 @@
+# Lessons Memory — Spec-Driven Platform V11
+
+# Entry format: ## YYYY-MM-DD — [ICON] [Title]
+
+# Types: 🔴 gotcha | 🟡 fix | 🟤 decision | ⚖️ trade-off | 🟢 change
+
+# READ ORDER: 🔴 first → 🟤 second → rest by relevance
+
+# ---
+
+```
+
+Your existing entries below it are fine — don't delete them. From this point forward, Cline will write new entries in the typed format. You don't need to reformat old entries.
+
+---
+
+### Step 4 — Update .clinerules
+
+Open `.clinerules` and add these lines to the context load order section. Find the section that lists the 9 docs and update it so `lessons.md` is explicitly first with the priority note:
+```
+
+Read .cline/memory/lessons.md FIRST — priority order: 🔴 gotchas → 🟤 decisions → rest
+
+```
+
+Also add a line acknowledging Rules 18/19/20 so Cline picks them up from the new CLAUDE.md immediately.
+
+If editing `.clinerules` feels risky, skip it — Cline will read it from the new CLAUDE.md regardless since Rule 4 is now explicit.
+
+---
+
+### Step 5 — Resume Session to reconnect context
+
+Open Cline (or Claude Code), say:
+```
+
+Resume Session
+
+```
+
+Attach these 3 docs:
+- `project.memory.md`
+- `docs/IMPLEMENTATION_MAP.md`
+- `docs/DECISIONS_LOG.md`
+
+Cline will confirm your app context, what's built, and what the locked decisions are. It now operates under all 20 V11 rules.
+
+---
+
+### Step 6 — Continue Phase 5
+
+You're back exactly where you were. Say:
+```
+
+Start Phase 5
+
 # Cline Lessons — Marine Guardian Enterprise
 
 > Format: date | phase | error | fix | prevention
