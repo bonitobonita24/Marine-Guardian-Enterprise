@@ -123,6 +123,46 @@
 
 ---
 
+## 2026-03-17 — Phase 6: Docker Services + Dev Environment
+
+- Agent: CLINE
+- Why: Started Phase 6 — Docker Compose infrastructure. Created split compose files per service group (db, cache, storage, app), start script, .env files. Docker services running (PostgreSQL, Valkey/Redis, MinIO). Prisma migration applied.
+- Files added:
+  deploy/compose/docker-compose.db.yml (PostgreSQL + PgBouncer),
+  deploy/compose/docker-compose.cache.yml (Valkey),
+  deploy/compose/docker-compose.storage.yml (MinIO + MailHog),
+  deploy/compose/docker-compose.infra.yml (placeholder for future SES),
+  deploy/compose/docker-compose.app.yml (web + worker),
+  deploy/compose/start.sh (orchestration script),
+  deploy/compose/.env (dev environment vars),
+  .env.local (root local env vars)
+- Files modified:
+  docs/IMPLEMENTATION_MAP.md (Phase 6 status added),
+  docs/IMPLEMENTATION_MAP.md (Phase 6 status table added),
+  deploy/compose/docker-compose.db.yml (removed obsolete version key),
+  deploy/compose/docker-compose.cache.yml (removed obsolete version key)
+- Files deleted: none
+- Schema/migrations: prisma/migrations/20260317155601_init (applied)
+- Errors encountered:
+  1. PgBouncer restarting in loop — configuration issue (non-blocking for dev)
+  2. RLS policies failed — SQL uses tenant_id but Prisma schema uses tenantId (camelCase)
+  3. mg_app user doesn't exist — needs to be created in PostgreSQL
+  4. bcryptjs not installed in packages/db — seed fails
+  5. DIRECT_DATABASE_URL env var not found — pnpm filter doesn't pass env vars from .env.local
+- Errors resolved:
+  1. Non-blocking — using direct PostgreSQL connection instead
+  2. RLS policies need to be rewritten to use tenantId (camelCase) — deferred to Phase 7
+  3. Need to create mg_app user manually — pending
+  4. Need to install bcryptjs in packages/db — pending
+  5. Run with explicit DATABASE_URL and DIRECT_DATABASE_URL env vars
+- Next steps:
+  1. Create mg_app user in PostgreSQL
+  2. Install bcryptjs and run seed
+  3. Fix RLS policies for camelCase column names
+  4. Verify /api/health returns 200
+
+---
+
 ## 2026-03-15 — Phase 0: Bootstrap
 
 - Agent: CLINE

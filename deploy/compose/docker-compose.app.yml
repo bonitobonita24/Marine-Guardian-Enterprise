@@ -1,0 +1,57 @@
+# App services — Next.js web + BullMQ worker
+version: "3.9"
+
+services:
+  web:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile.web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://mg_app:${APP_DB_PASSWORD:-devpassword}@postgres:5432/marine_guardian
+      DIRECT_DATABASE_URL: postgresql://mg_migrate:${POSTGRES_PASSWORD:-devpassword}@postgres:5432/marine_guardian
+      REDIS_HOST: valkey
+      REDIS_PORT: 6379
+      STORAGE_ENDPOINT: http://minio:9000
+      STORAGE_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
+      STORAGE_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin}
+      STORAGE_BUCKET: marine-guardian
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-change_in_production_at_least_32_chars}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - marine_guardian_network
+
+  worker:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile.worker
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://mg_app:${APP_DB_PASSWORD:-devpassword}@postgres:5432/marine_guardian
+      DIRECT_DATABASE_URL: postgresql://mg_migrate:${POSTGRES_PASSWORD:-devpassword}@postgres:5432/marine_guardian
+      REDIS_HOST: valkey
+      REDIS_PORT: 6379
+      STORAGE_ENDPOINT: http://minio:9000
+      STORAGE_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
+      STORAGE_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin}
+      STORAGE_BUCKET: marine-guardian
+    depends_on:
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+    networks:
+      - marine_guardian_network
+
+networks:
+  marine_guardian_network:
+    external: true

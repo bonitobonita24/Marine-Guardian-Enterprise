@@ -1,0 +1,23 @@
+# Cache services — Valkey (Redis fork) + BullMQ backend
+services:
+  valkey:
+    image: valkey/valkey:8-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - marine_guardian_network
+
+volumes:
+  redis_data:
+
+networks:
+  marine_guardian_network:
+    external: true

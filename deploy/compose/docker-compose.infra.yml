@@ -1,0 +1,14 @@
+# Infrastructure services — Email (dev via MailHog)
+# MailHog is already included in storage.yml, this file is for future SES/prod email
+version: "3.9"
+
+services:
+  # Currently MailHog is in storage.yml for dev
+  # Future: add SES relay for stage/prod
+  # ses:
+  #   image: b晟success/ses-relay:latest
+  #   ...
+
+networks:
+  marine_guardian_network:
+    external: true
