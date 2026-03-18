@@ -1,4 +1,5 @@
-# Database services — PostgreSQL + PgBouncer
+name: marine-guardian-enterprise
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -16,8 +17,6 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-    networks:
-      - marine_guardian_network
 
   pgbouncer:
     image: pgbouncer/pgbouncer:latest
@@ -34,13 +33,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    networks:
-      - marine_guardian_network
 
 volumes:
   pg_data:
-
-networks:
-  marine_guardian_network:
-    name: marine_guardian_dev_network
-    driver: bridge

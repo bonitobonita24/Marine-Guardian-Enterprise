@@ -1,5 +1,4 @@
-# Storage services — MinIO (S3-compatible)
-version: "3.9"
+name: marine-guardian-enterprise
 
 services:
   minio:
@@ -19,21 +18,13 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
-    networks:
-      - marine_guardian_network
 
   mailhog:
     image: mailhog/mailhog:latest
     restart: unless-stopped
     ports:
-      - "1025:1025"  # SMTP
-      - "8025:8025"  # Web UI
-    networks:
-      - marine_guardian_network
+      - "1025:1025"
+      - "8025:8025"
 
 volumes:
   minio_data:
-
-networks:
-  marine_guardian_network:
-    external: true

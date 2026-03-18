@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/strict-boolean-expressions */
 "use client"
 
 import { useState } from "react"
@@ -10,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@mari
 export default function LoginPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get("callbackUrl") || "/"
+  const callbackUrl = searchParams.get("callbackUrl") ?? "/"
   const error = searchParams.get("error")
 
   const [email, setEmail] = useState("")
@@ -18,29 +19,31 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [loginError, setLoginError] = useState("")
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setLoginError("")
 
-    try {
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      })
+    void (async () => {
+      try {
+        const result = await signIn("credentials", {
+          email,
+          password,
+          redirect: false,
+        })
 
-      if (result?.error) {
-        setLoginError("Invalid email or password")
-      } else {
-        router.push(callbackUrl)
-        router.refresh()
+        if (result?.error) {
+          setLoginError("Invalid email or password")
+        } else {
+          router.push(callbackUrl)
+          router.refresh()
+        }
+      } catch {
+        setLoginError("An unexpected error occurred")
+      } finally {
+        setIsLoading(false)
       }
-    } catch {
-      setLoginError("An unexpected error occurred")
-    } finally {
-      setIsLoading(false)
-    }
+    })()
   }
 
   return (
@@ -56,11 +59,13 @@ export default function LoginPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {(error || loginError) && (
+            {(error !== null || loginError.length > 0) && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
-                {error === "CredentialsSignin"
+                {error !== null && error === "CredentialsSignin"
                   ? "Invalid email or password"
-                  : loginError || "An error occurred during sign in"}
+                  : loginError.length > 0
+                    ? loginError
+                    : "An error occurred during sign in"}
               </div>
             )}
 

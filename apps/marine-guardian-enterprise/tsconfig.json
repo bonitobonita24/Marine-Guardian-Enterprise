@@ -24,7 +24,7 @@
     "noEmit": true,
     "declaration": false,
     "declarationMap": false,
-    "isolatedModules": false
+    "isolatedModules": true
   },
   "include": [
     "next-env.d.ts",

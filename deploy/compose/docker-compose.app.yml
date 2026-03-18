@@ -1,5 +1,4 @@
-# App services — Next.js web + BullMQ worker
-version: "3.9"
+name: marine-guardian-enterprise
 
 services:
   web:
@@ -12,7 +11,7 @@ services:
     environment:
       DATABASE_URL: postgresql://mg_app:${APP_DB_PASSWORD:-devpassword}@postgres:5432/marine_guardian
       DIRECT_DATABASE_URL: postgresql://mg_migrate:${POSTGRES_PASSWORD:-devpassword}@postgres:5432/marine_guardian
-      REDIS_HOST: valkey
+      REDIS_HOST: redis
       REDIS_PORT: 6379
       STORAGE_ENDPOINT: http://minio:9000
       STORAGE_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
@@ -23,12 +22,10 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      valkey:
+      redis:
         condition: service_healthy
       minio:
         condition: service_healthy
-    networks:
-      - marine_guardian_network
 
   worker:
     build:
@@ -38,7 +35,7 @@ services:
     environment:
       DATABASE_URL: postgresql://mg_app:${APP_DB_PASSWORD:-devpassword}@postgres:5432/marine_guardian
       DIRECT_DATABASE_URL: postgresql://mg_migrate:${POSTGRES_PASSWORD:-devpassword}@postgres:5432/marine_guardian
-      REDIS_HOST: valkey
+      REDIS_HOST: redis
       REDIS_PORT: 6379
       STORAGE_ENDPOINT: http://minio:9000
       STORAGE_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
@@ -47,11 +44,5 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      valkey:
+      redis:
         condition: service_healthy
-    networks:
-      - marine_guardian_network
-
-networks:
-  marine_guardian_network:
-    external: true
