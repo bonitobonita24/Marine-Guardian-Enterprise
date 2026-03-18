@@ -30,7 +30,7 @@
 | 7     | Auth + Pages           | ✅     | 2026-03-18 |
 | 8     | Production Ready       | ⏳     | 2026-03-18 |
 
-## Phase 7+8 Status (2026-03-18) — COMPLETE
+## Phase 8 Status (2026-03-18) — IN PROGRESS
 
 | Check                                         | Result |
 | -------------------------------------------- | ------ |
@@ -38,9 +38,13 @@
 | JWT session with role/tenant context         | ✅     |
 | tRPC procedures (protected, tenant, authorized) | ✅   |
 | Full CRUD router (fisherfolk, vessel, etc.) | ✅     |
-| Dashboard + 7 module pages                   | ✅     |
+| Dashboard + 9 module pages                   | ✅     |
 | Tenant layout + sidebar + provider           | ✅     |
 | Inline SVG icons (no external deps)         | ✅     |
+| Settings page + tenant switcher              | ✅     |
+| CSV export endpoint                          | ✅     |
+| Fisherfolk new form page                    | ✅     |
+| Fisherfolk detail page                      | ✅     |
 | tsconfig.json declaration: false             | ✅     |
 | pnpm turbo typecheck (all 15 tasks)         | ✅     |
 

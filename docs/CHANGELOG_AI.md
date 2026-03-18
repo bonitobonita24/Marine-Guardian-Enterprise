@@ -213,3 +213,25 @@
 - Schema/migrations: none
 - Errors encountered: none
 - Errors resolved: none
+
+## 2026-03-18 — Phase 8: Fisherfolk Form Page
+
+- Agent: CLINE
+- Why: Continue Phase 8 production-ready work — create fisherfolk registration form page
+- Files added: apps/marine-guardian-enterprise/src/app/[slug]/fisherfolk/new/page.tsx
+- Files modified: none
+- Files deleted: none
+- Schema/migrations: none
+- Errors encountered: TS2742 (JSX namespace), TS2322 (Sex enum type mismatch)
+- Errors resolved: Added `import type { JSX } from "react"`; imported `Sex` enum from `@marine-guardian/shared`
+
+## 2026-03-18 — Phase 8: Fisherfolk Detail Page
+
+- Agent: CLINE
+- Why: Continue Phase 8 Part B — create fisherfolk detail/view page
+- Files added: apps/marine-guardian-enterprise/src/app/[slug]/fisherfolk/[id]/page.tsx
+- Files modified: none
+- Files deleted: none
+- Schema/migrations: none
+- Errors encountered: ESLint (error in conditional)
+- Errors resolved: Wrapped `error` in `Boolean()` for strict boolean expression
