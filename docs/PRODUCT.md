@@ -1,12 +1,12 @@
 # Product Definition
-
 # ⚠️ THIS IS THE ONLY FILE YOU EDIT AS A HUMAN.
-
 # Agents own everything else. To change anything — edit this file, then run Phase 7.
+# V11: Wrap sensitive content in <private>...</private> to prevent agent propagation.
 
 ## App Name
-
 Marine Guardian Enterprise
+
+Repository: marine-guardian-enterprise
 
 ## Connected Apps
 
@@ -21,7 +21,6 @@ Marine Guardian Enterprise
   - Deployment: App Store + Play Store
 
 ## Purpose
-
 Marine Guardian Enterprise is a multi-tenant digital platform that enables Local
 Government Units (LGUs) to centrally manage fisherfolk registrations, fishing
 vessels, permits, catch monitoring, government fisheries programs, and marine
@@ -86,7 +85,10 @@ across all participating LGUs.
   isGlobal, createdAt, updatedAt)
   Global catalog shared across all tenants. Used for structured catch reporting
   and rare/endangered species anomaly detection.
-- **Fisherfolk** (id, tenantId, fisherfolkCode [unique per LGU], firstName,
+- **Fisherfolk** (id, tenantId, fisherfolkCode [unique per LGU — format:
+  {SLUG_PREFIX}-{6-digit-zero-padded-sequence}, e.g. CALA-000123; prefix is the
+  first 4 characters of the tenant slug uppercased, sequence auto-increments per
+  tenant], firstName,
   middleName, lastName, dateOfBirth, sex, barangayId [→ Barangay], contactNumber,
   rsbsaNumber, activityCategories [BOAT_OWNER_OPERATOR | CAPTURE_FISHING | GLEANING
   | VENDOR | FISH_PROCESSING | AQUACULTURE], photoUrl, signatureUrl, isActive,
@@ -165,7 +167,6 @@ across all participating LGUs.
 ## Main Workflows (step-by-step)
 
 ### Workflow: Fisherfolk Registration
-
 1. Fisheries Officer or Encoder navigates to the Fisherfolk Management module.
 2. Clicks "Register New Fisherfolk."
 3. Fills in: first name, middle name, last name, date of birth, sex, barangay,
@@ -184,7 +185,6 @@ across all participating LGUs.
     open and user is prompted to retry before submitting.
 
 ### Workflow: Fisherfolk ID Card Generation
-
 1. Staff opens a fisherfolk's profile page and clicks "Generate ID Card."
 2. System opens ID card designer pre-populated with: photo, full name, RSBSA
    number, activity category, LGU logo, and a QR code linking to the profile.
@@ -197,7 +197,6 @@ across all participating LGUs.
    Card can still be exported with a placeholder if staff confirms.
 
 ### Workflow: Vessel Registration
-
 1. Fisheries Officer navigates to Vessel Management and clicks "Register New Vessel."
 2. Searches for and selects vessel owner from fisherfolk registry. Owner must be a
    registered fisherfolk within the same LGU.
@@ -208,7 +207,6 @@ across all participating LGUs.
    to verify the fisherfolk record first.
 
 ### Workflow: Permit Application and Approval
-
 1. Fisheries Officer navigates to a vessel record and clicks "Apply for Permit."
 2. Selects permit type: Fishing Vessel Permit or Commercial Fishing Permit.
 3. Fills in required details. Saves as Draft or submits immediately.
@@ -226,7 +224,6 @@ across all participating LGUs.
    an active permit of the same type before allowing a new application.
 
 ### Workflow: Catch and Fish Landing Recording
-
 1. Fisheries Officer navigates to Catch Monitoring and clicks "Record Catch Report."
 2. Selects vessel. Linked fisherfolk auto-populated from vessel ownership.
 3. Selects species from global catalog, or enters free text if not listed.
@@ -238,7 +235,6 @@ across all participating LGUs.
    Analysts and LGU Super Admin.
 
 ### Workflow: Patrol Logging
-
 1. Patroller (LGU) or Ranger (BA) starts a patrol via BlueSentinel mobile app
    or BlueSentinel web module.
 2. Selects a patrol vessel from the registry.
@@ -257,7 +253,6 @@ across all participating LGUs.
    resume or manually mark as cancelled with a note.
 
 ### Workflow: Program Creation and Beneficiary Enrollment
-
 1. LGU Super Admin or Fisheries Officer navigates to Programs and clicks
    "Create New Program."
 2. Fills in: name, type (equipment distribution, livelihood subsidy, training),
@@ -270,7 +265,6 @@ across all participating LGUs.
    enrolled in the same program.
 
 ### Workflow: Distribution Event Recording
-
 1. Staff opens a program record and clicks "Record Distribution Event."
 2. Selects beneficiary from the program's enrolled fisherfolk list.
 3. Enters: item given, quantity, distribution date, optional notes.
@@ -278,7 +272,6 @@ across all participating LGUs.
 5. Distribution history visible on program detail page and fisherfolk profile.
 
 ### Workflow: Tenant Provisioning (BA Admin)
-
 1. BA Admin logs into marine-guardian-enterprise.powerbyte.app/bluealliance.
 2. Navigates to Tenant Management (BA_ADMIN only) and clicks "Provision New LGU."
 3. Fills in: LGU name, path slug (e.g. `calapan`), display name, optional logo URL.
@@ -286,7 +279,7 @@ across all participating LGUs.
 4. Submits. System:
    a. Creates new Tenant record with type LGU.
    b. Seeds Barangay table with City of Calapan 62-barangay dataset (default) or
-   a custom list if provided.
+      a custom list if provided.
    c. Writes tenant_provisioning AuditLog entry.
    d. Returns new tenant's path-based URL and setup link.
 5. BA Admin can optionally create the first SUPER_ADMIN user for the new LGU
@@ -295,7 +288,6 @@ across all participating LGUs.
    rejects with a clear error.
 
 ### Workflow: GPS Patrol Tracking (Mobile)
-
 1. Patroller or Ranger starts a patrol from BlueSentinel mobile app and selects
    a vessel. App requests GPS permission if not already granted.
 2. App begins recording GPS at 30-second intervals via Expo Location background
@@ -306,7 +298,6 @@ across all participating LGUs.
 6. Edge case — GPS denied: falls back to manual location entry, routeGeoJson null.
 
 ### Workflow: Evidence Photo Capture (Mobile — Incident Reporting)
-
 1. Patroller fills in an incident report and taps "Add Evidence."
 2. App presents: Camera or Gallery. Up to 5 photos (JPEG, max 10 MB each).
 3. App compresses each photo to ≤2 MB using Expo ImageManipulator.
@@ -319,7 +310,6 @@ across all participating LGUs.
    next sync. Incident saved with partial evidenceUrls until all succeed.
 
 ### Workflow: Expo Push Token Registration (Mobile)
-
 1. On first launch after login, app requests push notification permissions.
 2. If granted, Expo SDK retrieves the device's Expo Push Token.
 3. App calls `pushToken.register` tRPC mutation with token and platform.
@@ -332,7 +322,6 @@ across all participating LGUs.
    deletes the stale token.
 
 ### Workflow: BlueSentinel Incident Reporting (Mobile, Offline-First)
-
 1. Patroller (LGU) or Ranger (BA) opens BlueSentinel mobile app.
 2. Creates new incident: violator name and info, vessel details (optional),
    fishing gear used, GPS location (auto-captured or manual), incident date,
@@ -350,20 +339,17 @@ across all participating LGUs.
    wins for new reports.
 
 ### Workflow: LGU Dashboard Monitoring
-
 1. Any LGU user (except Patroller) navigates to the Dashboard.
 2. Dashboard loads KPIs in real time via `dashboard.lguEvents` SSE subscription.
 3. User can filter by date range or barangay.
 
 ### Workflow: BA Operational Dashboard Monitoring
-
 1. BA Admin, BA Analyst, or BA Ranger logs into the Blue Alliance workspace.
 2. BA Operational Dashboard loads KPIs scoped to BA tenant data only via
    `dashboard.baOperationalEvents` SSE subscription.
 3. BA Admin can manage BA users and settings from this workspace.
 
 ### Workflow: Consolidated Cross-LGU Dashboard Monitoring
-
 1. BA Admin or BA Analyst navigates to the Consolidated Dashboard tab within
    the Blue Alliance workspace (separate from BA Operational Dashboard).
 2. Consolidated Dashboard loads combined data across BA and all LGU tenants
@@ -397,7 +383,6 @@ across all participating LGUs.
 ## Background Jobs
 
 BullMQ queue names (one queue per job type for independent scaling):
-
 - `image-optimization` — ImageOptimization job
 - `permit-pdf` — PermitPdfGeneration job
 - `idcard-pdf` — IdCardPdfGeneration job
@@ -421,9 +406,10 @@ have real operational consequences for field staff who cannot access the DB dire
   stores it, attaches URL to permit record | retry 3x exponential | DLQ after 3
   failures — permit status remains Approved, staff notified to manually regenerate.
 
-- IdCardPdfGeneration | triggered on demand when staff exports fisherfolk ID card |
-  renders front + back on 200×300mm PDF | retry 3x | DLQ — staff notified, can
-  retry from the profile page.
+- IdCardPdfGeneration | triggered on demand when staff clicks "Export / Print" on
+  the ID card designer | synchronous — PDF generated in-request, browser download
+  starts immediately (single PDF, sub-second generation, no queue needed) |
+  no retry — on failure, staff sees an error toast and can retry from the same page.
 
 - PermitExpiryCheck | runs daily at midnight | scans all Approved permits;
   transitions any permit with expiresAt in the past to Expired | retries full job
@@ -492,7 +478,6 @@ have real operational consequences for field staff who cannot access the DB dire
 ## Reporting & Dashboards
 
 ### LGU Operational Dashboard
-
 - Total registered fisherfolk: count card + trend over time (line chart)
 - Fisherfolk by barangay: bar chart
 - Fisherfolk by activity category: pie/donut chart
@@ -505,9 +490,7 @@ have real operational consequences for field staff who cannot access the DB dire
 - Export: none (dashboard view only)
 
 ### BA Operational Dashboard
-
 Scoped to BA tenant data only. Visible to BA Admin, BA Analyst, BA Ranger.
-
 - Total BA Ranger patrols by status: count cards (active / completed / cancelled)
 - BA incidents by status: count cards + bar chart
 - BA patrol fuel consumption trend: line chart
@@ -517,9 +500,7 @@ Scoped to BA tenant data only. Visible to BA Admin, BA Analyst, BA Ranger.
 - Export: none (dashboard view only)
 
 ### Consolidated Cross-LGU Dashboard
-
 Visible to BA Admin and BA Analyst only. BA Ranger does NOT have access.
-
 - Total fisherfolk across all LGUs: aggregate count + per-LGU breakdown (bar chart)
 - Total vessels across all LGUs: aggregate count
 - Permit statistics by LGU: grouped bar chart (approved / pending / expired)
@@ -535,7 +516,18 @@ Visible to BA Admin and BA Analyst only. BA Ranger does NOT have access.
   - Rare or endangered species in catch reports
   - Incident spikes per LGU vs historical baseline
 - Drill-down: BA Admin can click any LGU to view its individual data breakdown
-- Export: none (can be added in a future phase)
+- Export: none (dashboard view only)
+
+### Module Table Exports
+CSV export is in scope for two module tables only (operational need for BFAR
+reporting). All other tables are view-only in this build.
+- Fisherfolk registry table: CSV export — all columns, filtered by current search/
+  filter state, scoped to the active tenant. Available to SUPER_ADMIN and
+  FISHERIES_OFFICER only.
+- Permit list table: CSV export — all columns including status and dates, filtered
+  by current filter state, scoped to the active tenant. Available to SUPER_ADMIN
+  and FISHERIES_OFFICER only.
+- Vessels, catch reports, programs, incidents: no export in this build.
 
 ## Mobile App
 
@@ -576,25 +568,22 @@ the first path segment. No wildcard DNS or wildcard SSL required — a single
 certificate for marine-guardian-enterprise.powerbyte.app covers all tenants.
 
 Multi-tenant — subdirectory routing:
-
-- LGU workspace: https://marine-guardian-enterprise.powerbyte.app/[lgu-slug]/...
-  Example: https://marine-guardian-enterprise.powerbyte.app/calapan/dashboard
-- BA workspace: https://marine-guardian-enterprise.powerbyte.app/bluealliance/...
-- Dev (LGU): http://localhost:3000/[lgu-slug]/...
-- Dev (BA): http://localhost:3000/bluealliance/...
-- Mobile API: same backend; tenant slug passed as path param in tRPC calls
-  (/trpc/[slug]/router); stored in mobile app local state after login
+- LGU workspace:  https://marine-guardian-enterprise.powerbyte.app/[lgu-slug]/...
+  Example:        https://marine-guardian-enterprise.powerbyte.app/calapan/dashboard
+- BA workspace:   https://marine-guardian-enterprise.powerbyte.app/bluealliance/...
+- Dev (LGU):      http://localhost:3000/[lgu-slug]/...
+- Dev (BA):       http://localhost:3000/bluealliance/...
+- Mobile API:     same backend; tenant slug passed as path param in tRPC calls
+                  (/trpc/[slug]/router); stored in mobile app local state after login
 
 ## Access Control
 
 Public routes (no login required):
-
 - /login
 - /forgot-password
 - /reset-password
 
 Protected routes (login required — all authenticated users):
-
 - /[slug]/dashboard
 - /[slug]/fisherfolk
 - /[slug]/vessels
@@ -605,7 +594,6 @@ Protected routes (login required — all authenticated users):
 - /[slug]/settings
 
 Role-restricted routes:
-
 - /[slug]/settings/users — SUPER_ADMIN and BA_ADMIN only
 - /[slug]/settings/tenant — SUPER_ADMIN and BA_ADMIN only
 - /[slug]/permits/approve — SUPER_ADMIN and FISHERIES_OFFICER only
@@ -613,7 +601,15 @@ Role-restricted routes:
 - /bluealliance/tenants — BA_ADMIN only
 
 Tenant boundary enforcement: all /[slug]/... routes verify the authenticated user
-has an active TenantMembership for the slug in the URL. Mismatched slug returns 403. Enforced in Next.js middleware before any page renders.
+has an active TenantMembership for the slug in the URL. Mismatched slug returns
+403. Enforced in Next.js middleware before any page renders.
+
+Multi-tenant login UX: on successful login, user is auto-routed to their most
+recently used tenant (stored as a session preference). If no prior session exists,
+user is routed to their only tenant, or to a /select-tenant page if they have
+multiple active memberships. A tenant switcher is available in the nav header at
+all times, allowing switch without re-login — JWT is re-issued for the selected
+tenant on switch.
 
 Navigation menus: hardcoded with role-based visibility baked into code — not
 stored in a database table. Role boundaries are fixed for this government system
@@ -643,7 +639,6 @@ and do not require admin configuration.
 ## Security Requirements
 
 Always active for all roles:
-
 - RBAC: role-based access control enforced on every tRPC procedure via middleware
   before any resolver runs. Unauthorized calls return 403 FORBIDDEN. (L3 — always active)
 - AuditLog: immutable record written synchronously on every data mutation before
@@ -652,7 +647,6 @@ Always active for all roles:
   query. Missing tenantId throws a hard error before query reaches the DB. (L6 — always active)
 
 Multi-tenant isolation layers:
-
 - Tenant context: tenantId extracted from resolved URL slug and attached to JWT
   session context on every request. (L1)
 - PostgreSQL RLS: enabled on all tenant-scoped tables. Runtime role `mg_app` has
@@ -668,19 +662,17 @@ Multi-tenant isolation layers:
   enforced to prevent connection exhaustion. (L4)
 
 Rate limiting:
-
 - Public endpoints (login, forgot-password, reset-password): 20 requests/minute per IP
 - Authenticated endpoints: 300 requests/minute per user
 - Upload endpoints: 10 uploads/minute per user
 - Mobile sync endpoints: 60 requests/minute per device
 
 CORS allowed origins (H1):
-
-- dev: http://localhost:3000 and exp:// (Expo dev client, dev only)
+- dev:   http://localhost:3000 and exp:// (Expo dev client, dev only)
 - stage: https://stage.marine-guardian-enterprise.powerbyte.app
-- prod: https://marine-guardian-enterprise.powerbyte.app
-  No additional origins. Mobile production traffic uses the same prod origin via
-  the Expo-built app (not a browser origin).
+- prod:  https://marine-guardian-enterprise.powerbyte.app
+No additional origins. Mobile production traffic uses the same prod origin via
+the Expo-built app (not a browser origin).
 
 CSRF protection (H2): SameSite=Lax cookies (Auth.js default). No additional CSRF
 tokens needed for same-origin web requests. Mobile uses Bearer token auth and is
@@ -717,9 +709,9 @@ multi — subdirectory routing
 
 ## Domain / Base URL Expectations
 
-Dev: http://localhost:3000
+Dev:   http://localhost:3000
 Stage: https://stage.marine-guardian-enterprise.powerbyte.app
-Prod: https://marine-guardian-enterprise.powerbyte.app
+Prod:  https://marine-guardian-enterprise.powerbyte.app
 
 ## Infrastructure Notes
 
@@ -727,16 +719,16 @@ All services run in Docker Compose for dev and stage. AWS-ready via env var swap
 only — no code changes required to move from local to cloud services.
 
 Docker Compose services:
-
 - postgres + pgbouncer (transaction pooling, per-tenant connection limits)
 - valkey (cache + BullMQ queue backend)
 - minio (local S3-compatible file storage)
 - mailhog (local email capture for dev)
 - app (Next.js web server, port 3000)
-- worker (BullMQ background job processor)
+- worker (BullMQ background job processor — standalone Node.js app at apps/worker/
+  with its own package.json and src/index.ts; imports queue/job definitions from
+  packages/jobs; scales independently from the Next.js app)
 
 Production AWS path:
-
 - RDS PostgreSQL (primary database)
 - S3 or Cloudflare R2 (file storage — swap via env var, zero code changes)
 - ElastiCache or self-hosted Valkey (queue and cache backend)
@@ -744,33 +736,49 @@ Production AWS path:
 - PgBouncer as RDS sidecar or via RDS Proxy
 
 Mobile (BlueSentinel):
-
 - Expo EAS Build for App Store and Play Store distribution
 - Expo Push Service for push notification delivery
 - WatermelonDB (local SQLite) for offline-first data storage on device
 
-Kubernetes (I1): disabled by default. Placeholder K8s manifests are scaffolded
+Monorepo worker structure:
+- packages/jobs — queue definitions, job payload types, shared BullMQ config
+- apps/worker — standalone Node.js runtime process (entry: src/index.ts);
+  imports from packages/jobs; deployed as a separate Docker container
+
+Kubernetes: disabled by default. Placeholder K8s manifests are scaffolded
 in /k8s/ for future use but are not wired into any deployment pipeline. All
 active deployment targets use Docker Compose (dev/stage) or direct AWS services
 (prod). K8s can be activated in a future infrastructure phase.
 
 ## Tech Stack Preferences
 
-Frontend framework: Next.js
-API style: tRPC
-ORM / DB layer: Prisma + PostgreSQL RLS (runtime role mg_app enforces
-RLS; migration role mg_migrate has BYPASSRLS and is
-never used at runtime; RLS policies maintained in
-/prisma/migrations/apply_rls_policies.sql)
-Auth provider: Auth.js (NextAuth v5)
-Primary database: PostgreSQL
-Cache / queue: Valkey + BullMQ
-File storage: MinIO (dev) / S3 or Cloudflare R2 (prod)
-UI component library: shadcn/ui + Tailwind CSS
-Mobile UI library: React Native Reusables + NativeWind
+Frontend framework:        Next.js
+API style:                 tRPC
+ORM / DB layer:            Prisma + PostgreSQL RLS (runtime role mg_app enforces
+                           RLS; migration role mg_migrate has BYPASSRLS and is
+                           never used at runtime; RLS policies maintained in
+                           /prisma/migrations/apply_rls_policies.sql)
+Auth provider:             Auth.js (NextAuth v5)
+Primary database:          PostgreSQL
+Cache / queue:             Valkey + BullMQ
+File storage:              MinIO (dev) / S3 or Cloudflare R2 (prod)
+UI component library:      shadcn/ui + Tailwind CSS
+Mobile UI library:         React Native Reusables + NativeWind
 
 Project-specific additions (beyond base stack defaults):
-Connection pooler: PgBouncer (transaction mode, per-tenant pool limits)
-Realtime transport: Server-Sent Events (SSE) via tRPC subscriptions
-Offline sync (mobile): WatermelonDB (local SQLite)
-Mobile framework: Expo managed workflow / React Native
+Connection pooler:         PgBouncer (transaction mode, per-tenant pool limits)
+Realtime transport:        Server-Sent Events (SSE) via tRPC subscriptions
+Offline sync (mobile):     WatermelonDB (local SQLite)
+Mobile framework:          Expo managed workflow / React Native
+
+## Design Identity
+
+Brand feel:         professional/enterprise
+Target aesthetic:   Government-grade platform — clean, structured, data-dense
+                    layout optimised for operational staff. Similar feel to
+                    enterprise GIS and public-sector dashboards. No decorative
+                    elements; clarity and legibility are the primary values.
+Industry category:  Government / Public Sector
+Dark mode required: optional toggle
+Key constraint:     WCAG AA accessibility compliance required — government system
+                    used by public servants across varying device quality levels
