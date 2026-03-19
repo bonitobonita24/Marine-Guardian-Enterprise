@@ -11,7 +11,7 @@ export default function ProgramDetailPage(): JSX.Element {
 
   const { data: program, isLoading } = trpc.program.byId.useQuery({ id });
 
-  if (isLoading) {
+  if (Boolean(isLoading)) {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600"></div>
@@ -29,7 +29,7 @@ export default function ProgramDetailPage(): JSX.Element {
     );
   }
 
-  const formatDate = (date: Date | string | null) => {
+  const formatDate = (date: Date | string | null | undefined) => {
     if (!date) return "—";
     return new Date(date).toLocaleDateString("en-PH", {
       year: "numeric",
@@ -59,7 +59,7 @@ export default function ProgramDetailPage(): JSX.Element {
         <div className="border-b border-slate-100 px-6 py-4">
           <h1 className="text-2xl font-bold text-slate-900">{program.name}</h1>
           <span className="mt-2 inline-block rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
-            {typeLabels[program.type] || program.type}
+            {typeLabels[program.type] ?? program.type}
           </span>
         </div>
 
@@ -75,7 +75,7 @@ export default function ProgramDetailPage(): JSX.Element {
             </div>
           </div>
 
-          {program.description && (
+          {Boolean(program.description) && (
             <div className="mt-6">
               <h3 className="text-sm font-medium text-slate-500">Description</h3>
               <p className="mt-1 text-slate-900">{program.description}</p>
@@ -107,7 +107,7 @@ export default function ProgramDetailPage(): JSX.Element {
                       <td className="py-2">
                         {b.fisherfolk.firstName} {b.fisherfolk.lastName}
                       </td>
-                      <td className="py-2">{b.fisherfolk.barangay?.name || "—"}</td>
+                      <td className="py-2">{Boolean(b.fisherfolk.barangay?.name) ? b.fisherfolk.barangay?.name : "—"}</td>
                       <td className="py-2">{formatDate(b.enrolledAt)}</td>
                     </tr>
                   ))}

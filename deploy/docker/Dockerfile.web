@@ -23,10 +23,12 @@ RUN pnpm turbo build --filter=marine-guardian-enterprise
 FROM node:22-bookworm AS runner
 WORKDIR /app
 ENV NODE_ENV=production
+# Copy Prisma engines (required for Prisma 6 query engine)
+# Copy the entire .pnpm prisma structure
+COPY --from=builder /app/node_modules/.pnpm /app/node_modules/.pnpm
+# Copy standalone app
 COPY --from=builder /app/apps/marine-guardian-enterprise/.next/standalone ./
 COPY --from=builder /app/apps/marine-guardian-enterprise/.next/static ./apps/marine-guardian-enterprise/.next/static
 COPY --from=builder /app/apps/marine-guardian-enterprise/public ./apps/marine-guardian-enterprise/public
-COPY --from=builder /app/node_modules/.pnpm/@prisma+client@6.19.2_prisma@6.19.2_typescript@5.9.3__typescript@5.9.3/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/.pnpm/@prisma+client@6.19.2_prisma@6.19.2_typescript@5.9.3__typescript@5.9.3/node_modules/@prisma/client ./node_modules/@prisma/client
 EXPOSE 3000
 CMD ["node", "apps/marine-guardian-enterprise/server.js"]

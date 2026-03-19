@@ -19,7 +19,7 @@ export default function VesselDetailPage(): JSX.Element {
     )
   }
 
-  if (Boolean(error) || vessel === null || vessel === undefined) {
+  if (Boolean(error) || !vessel) {
     return (
       <div className="mx-auto max-w-2xl p-8">
         <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-600">
@@ -34,6 +34,8 @@ export default function VesselDetailPage(): JSX.Element {
       </div>
     )
   }
+
+  const v = vessel
 
   const formatDate = (date: Date | string | null) => {
     if (!date) return "—"
@@ -54,8 +56,8 @@ export default function VesselDetailPage(): JSX.Element {
           >
             ← Back to Vessels
           </button>
-          <h1 className="text-2xl font-bold text-slate-900">{vessel.vesselName}</h1>
-          <p className="text-sm text-slate-500">{vessel.registrationNumber}</p>
+          <h1 className="text-2xl font-bold text-slate-900">{v.vesselName}</h1>
+          <p className="text-sm text-slate-500">{v.registrationNumber}</p>
         </div>
         <div className="flex gap-2">
           <button
@@ -73,30 +75,30 @@ export default function VesselDetailPage(): JSX.Element {
           <dl className="grid grid-cols-2 gap-x-8 gap-y-4">
             <div>
               <dt className="text-sm font-medium text-slate-500">Vessel Name</dt>
-              <dd className="mt-1 text-sm text-slate-900">{vessel.vesselName}</dd>
+              <dd className="mt-1 text-sm text-slate-900">{v.vesselName}</dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-slate-500">Registration Number</dt>
-              <dd className="mt-1 text-sm text-slate-900">{vessel.registrationNumber}</dd>
+              <dd className="mt-1 text-sm text-slate-900">{v.registrationNumber}</dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-slate-500">Type</dt>
-              <dd className="mt-1 text-sm text-slate-900">{vessel.type}</dd>
+              <dd className="mt-1 text-sm text-slate-900">{v.type}</dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-slate-500">Gear Type</dt>
-              <dd className="mt-1 text-sm text-slate-900">{vessel.gearType ?? "—"}</dd>
+              <dd className="mt-1 text-sm text-slate-900">{v.gearType ?? "—"}</dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-slate-500">Length</dt>
               <dd className="mt-1 text-sm text-slate-900">
-                {vessel.lengthMeters != null ? `${vessel.lengthMeters} meters` : "—"}
+                {v.lengthMeters != null ? `${v.lengthMeters} meters` : "—"}
               </dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-slate-500">Tonnage</dt>
               <dd className="mt-1 text-sm text-slate-900">
-                {vessel.tonnage != null ? `${vessel.tonnage} GT` : "—"}
+                {v.tonnage != null ? `${v.tonnage} GT` : "—"}
               </dd>
             </div>
           </dl>
@@ -108,14 +110,14 @@ export default function VesselDetailPage(): JSX.Element {
             <div>
               <dt className="text-sm font-medium text-slate-500">Owner</dt>
               <dd className="mt-1 text-sm text-slate-900">
-                {vessel.owner
-                  ? `${vessel.owner.fisherfolkCode} — ${vessel.owner.firstName} ${vessel.owner.lastName}`
+                {v.owner
+                  ? `${v.owner.fisherfolkCode} — ${v.owner.firstName} ${v.owner.lastName}`
                   : "—"}
               </dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-slate-500">Home Port Barangay</dt>
-              <dd className="mt-1 text-sm text-slate-900">{vessel.homePortBarangay?.name ?? "—"}</dd>
+              <dd className="mt-1 text-sm text-slate-900">{v.homePortBarangay?.name ?? "—"}</dd>
             </div>
           </dl>
         </section>
@@ -128,20 +130,20 @@ export default function VesselDetailPage(): JSX.Element {
               <dd className="mt-1">
                 <span
                   className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
-                    vessel.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                    v.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
                   }`}
                 >
-                  {vessel.isActive ? "Active" : "Inactive"}
+                  {v.isActive ? "Active" : "Inactive"}
                 </span>
               </dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-slate-500">Created</dt>
-              <dd className="mt-1 text-sm text-slate-900">{formatDate(vessel.createdAt)}</dd>
+              <dd className="mt-1 text-sm text-slate-900">{formatDate(v.createdAt)}</dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-slate-500">Last Updated</dt>
-              <dd className="mt-1 text-sm text-slate-900">{formatDate(vessel.updatedAt)}</dd>
+              <dd className="mt-1 text-sm text-slate-900">{formatDate(v.updatedAt)}</dd>
             </div>
           </dl>
         </section>

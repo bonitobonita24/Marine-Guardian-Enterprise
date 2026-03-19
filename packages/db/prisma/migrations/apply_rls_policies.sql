@@ -47,35 +47,35 @@ ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 -- ── Direct tenant_id tables ───────────────────────────────────────────────────
 
 CREATE POLICY tenant_isolation ON barangays
-  USING (tenant_id = current_setting('app.current_tenant_id', true)::text);
+  USING ("tenantId" = current_setting('app.current_tenant_id', true)::text);
 
 CREATE POLICY tenant_isolation ON fisherfolks
-  USING (tenant_id = current_setting('app.current_tenant_id', true)::text);
+  USING ("tenantId" = current_setting('app.current_tenant_id', true)::text);
 
 CREATE POLICY tenant_isolation ON vessels
-  USING (tenant_id = current_setting('app.current_tenant_id', true)::text);
+  USING ("tenantId" = current_setting('app.current_tenant_id', true)::text);
 
 CREATE POLICY tenant_isolation ON permits
-  USING (tenant_id = current_setting('app.current_tenant_id', true)::text);
+  USING ("tenantId" = current_setting('app.current_tenant_id', true)::text);
 
 CREATE POLICY tenant_isolation ON catch_reports
-  USING (tenant_id = current_setting('app.current_tenant_id', true)::text);
+  USING ("tenantId" = current_setting('app.current_tenant_id', true)::text);
 
 CREATE POLICY tenant_isolation ON programs
-  USING (tenant_id = current_setting('app.current_tenant_id', true)::text);
+  USING ("tenantId" = current_setting('app.current_tenant_id', true)::text);
 
 CREATE POLICY tenant_isolation ON incidents
-  USING (tenant_id = current_setting('app.current_tenant_id', true)::text);
+  USING ("tenantId" = current_setting('app.current_tenant_id', true)::text);
 
 CREATE POLICY tenant_isolation ON patrols
-  USING (tenant_id = current_setting('app.current_tenant_id', true)::text);
+  USING ("tenantId" = current_setting('app.current_tenant_id', true)::text);
 
 -- AuditLog: allow SELECT by owning tenant, allow INSERT from any (cross-tenant events use NULL)
 CREATE POLICY tenant_isolation_select ON audit_logs
   FOR SELECT
   USING (
-    tenant_id IS NULL
-    OR tenant_id = current_setting('app.current_tenant_id', true)::text
+    "tenantId" IS NULL
+    OR "tenantId" = current_setting('app.current_tenant_id', true)::text
   );
 
 CREATE POLICY tenant_isolation_insert ON audit_logs
@@ -87,17 +87,17 @@ CREATE POLICY tenant_isolation_insert ON audit_logs
 
 CREATE POLICY tenant_isolation ON program_beneficiaries
   USING (
-    program_id IN (
+    "programId" IN (
       SELECT id FROM programs
-      WHERE tenant_id = current_setting('app.current_tenant_id', true)::text
+      WHERE "tenantId" = current_setting('app.current_tenant_id', true)::text
     )
   );
 
 CREATE POLICY tenant_isolation ON distribution_events
   USING (
-    program_id IN (
+    "programId" IN (
       SELECT id FROM programs
-      WHERE tenant_id = current_setting('app.current_tenant_id', true)::text
+      WHERE "tenantId" = current_setting('app.current_tenant_id', true)::text
     )
   );
 

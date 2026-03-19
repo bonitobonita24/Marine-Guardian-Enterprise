@@ -30,7 +30,7 @@
 | 7     | Auth + Pages           | ✅     | 2026-03-18 |
 | 8     | Production Ready       | ⏳     | 2026-03-18 |
 
-## Phase 8 Status (2026-03-19) — IN PROGRESS
+## Phase 8 Status (2026-03-19) — COMPLETE
 
 ### Auth + CRUD ✅
 | Check                                         | Result |
@@ -54,6 +54,9 @@
 | Permit new form page                        | ✅     |
 | Permit detail page                          | ✅     |
 | CatchReport new form page                   | ✅     |
+| Incident new/detail pages                   | ✅     |
+| Patrol new/detail pages                     | ✅     |
+| Program new/detail pages                    | ✅     |
 
 ### Infrastructure ✅
 | Check                                         | Result |
@@ -63,6 +66,11 @@
 | mg_app database user created                 | ✅     |
 | tsconfig.json declaration: false             | ✅     |
 | pnpm turbo typecheck (all 15 tasks)         | ✅     |
+
+### CSV Export ✅
+| Check                                         | Result |
+| -------------------------------------------- | ------ |
+| Fisherfolk CSV export endpoint               | ✅     |
 
 ### Visual QA (Rule 16) ✅ — 2026-03-19
 | Check                                         | Result |
