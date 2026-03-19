@@ -27,3 +27,50 @@
 - Visual QA complete — app is production-ready
 - App accessible at http://localhost:3000
 - Phase 8 fully validated
+
+---
+
+## 2026-03-20 | Session Resume #2 | CLINE
+
+### Problem
+Worker container was failing to start with `Cannot find module '@marine-guardian/jobs'` error.
+
+### Root Causes (multiple issues)
+1. **pnpm workspace symlinks**: pnpm creates symlinks in `.pnpm/node_modules/@marine-guardian/` that point to `/app/packages/<pkg>`. These weren't being copied to the runner.
+2. **Missing packages directory**: The symlinks pointed to `/app/packages/` which didn't exist in the runner.
+3. **Prisma not generated**: The `@prisma/client` wasn't initialized because `prisma generate` wasn't run in the deps stage.
+
+### Fixes Applied to Dockerfile.worker
+1. Copy entire `packages` directory in deps stage
+2. Copy `packages` from deps to runner
+3. Create symlinks for `@marine-guardian/*` packages in runner
+4. Run `prisma generate` in both deps and builder stages
+
+### Final Dockerfile.worker Structure
+- **deps stage**: pnpm install + prisma generate + packages directory
+- **builder stage**: build TypeScript
+- **runner stage**: copy dist + node_modules + packages + create symlinks
+
+### Result
+✅ All 5 services healthy: web, worker, postgres, redis, minio
+✅ Worker logs show: "🚀 Worker starting..." and "✅ 2 workers active"
+
+### Files Modified
+- `deploy/docker/Dockerfile.worker`
+
+---
+
+## 2026-03-20 | Session Resume #3 | CLINE
+
+### Actions
+- Attempted to index codebase using SocratiCode per Rule 17
+
+### SocratiCode Status
+- Docker is running (containers: marine-guardian-enterprise-web, worker, postgres, redis, minio)
+- SocratiCode MCP server not yet active in this session
+- To index: Start Docker and run SocratiCode MCP tool (will auto-pull images ~5min)
+
+### Note
+Per Rule 17: "SocratiCode index pending — start Docker and run codebase_index"
+- MCP server configured in .vscode/mcp.json
+- Will auto-pull Docker images on first MCP tool use

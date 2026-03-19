@@ -28,7 +28,7 @@
 | 5     | Validation             | ✅     | 2026-03-15 |
 | 6     | Start Docker Services  | ✅     | 2026-03-18 |
 | 7     | Auth + Pages           | ✅     | 2026-03-18 |
-| 8     | Production Ready       | ⏳     | 2026-03-18 |
+| 8     | Production Ready       | ✅     | 2026-03-20 |
 
 ## Phase 8 Status (2026-03-19) — COMPLETE
 
@@ -61,11 +61,12 @@
 ### Infrastructure ✅
 | Check                                         | Result |
 | -------------------------------------------- | ------ |
-| Docker services (postgres, pgbouncer, valkey, minio, mailhog) | ✅ |
+| Docker services (postgres, redis, minio, web, worker) | ✅ |
 | Prisma migrations applied                     | ✅     |
 | mg_app database user created                 | ✅     |
 | tsconfig.json declaration: false             | ✅     |
 | pnpm turbo typecheck (all 15 tasks)         | ✅     |
+| Worker Docker build (pnpm workspaces)        | ✅     |
 
 ### CSV Export ✅
 | Check                                         | Result |

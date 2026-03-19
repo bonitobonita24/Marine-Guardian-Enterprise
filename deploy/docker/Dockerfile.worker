@@ -4,23 +4,30 @@ RUN npm install -g pnpm
 FROM base AS deps
 WORKDIR /app
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
-COPY packages/shared/package.json ./packages/shared/
-COPY packages/db/package.json ./packages/db/
-COPY packages/jobs/package.json ./packages/jobs/
-COPY packages/storage/package.json ./packages/storage/
-COPY apps/worker/package.json ./apps/worker/
+COPY packages ./packages
+COPY apps/worker ./apps/worker
 RUN pnpm install --frozen-lockfile
+RUN cd /app/packages/db && pnpm exec prisma generate
 
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+RUN cd /app/packages/db && pnpm exec prisma generate
 RUN pnpm --filter=worker build
 
 FROM node:22-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=builder /app/apps/worker/dist ./dist
+# Copy node_modules from deps stage (has all production deps)
 COPY --from=deps /app/node_modules ./node_modules
+# Copy packages directory so workspace symlinks resolve correctly
+COPY --from=deps /app/packages ./packages
+# Create symlinks for workspace packages (pnpm may not preserve them in COPY)
+RUN for pkg in db jobs shared storage ui api-client; do \
+      ln -sf /app/node_modules/.pnpm/node_modules/@marine-guardian/$pkg /app/node_modules/@marine-guardian/$pkg 2>/dev/null || true; \
+    done && \
+    ln -sf /app/node_modules/.pnpm/node_modules/@marine-guardian /app/node_modules/@marine-guardian 2>/dev/null || true
 EXPOSE 3001
 CMD ["node", "dist/index.js"]
