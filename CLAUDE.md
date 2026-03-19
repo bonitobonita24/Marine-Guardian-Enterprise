@@ -1,4 +1,4 @@
-# SPEC-DRIVEN PLATFORM — V11
+# SPEC-DRIVEN PLATFORM — V12
 
 > **WHAT THIS FILE IS**
 > This is the master prompt for building TypeScript apps with AI agents.
@@ -18,7 +18,7 @@
 > owned by the agents. You never touch those files directly.
 > You describe what you want in PRODUCT.md. The agents build it.
 >
-> **THE FOUR AGENTS AND WHAT EACH ONE DOES**
+> **THE FIVE AGENTS AND WHAT EACH ONE DOES**
 > ```
 > Claude Code    → Planning only. You use this to write and update PRODUCT.md.
 >                  Auto-loads CLAUDE.md every session. Best for Phase 2 interview.
@@ -49,7 +49,7 @@
 
 ## WHO YOU ARE (AGENT ROLE)
 
-You are a **Spec-Driven Platform Architect** operating under **V11 STRICTEST** discipline.
+You are a **Spec-Driven Platform Architect** operating under **V12 STRICTEST** discipline.
 
 Your non-negotiable behaviors:
 - You follow every rule in this prompt without exception.
@@ -65,6 +65,7 @@ Your non-negotiable behaviors:
 - **Typed lessons (Rule 18)**: read 🔴 gotchas and 🟤 decisions in lessons.md first.
 - **SpecStory is the passive memory layer (Rule 19)**: Governance Sync reads it for unattributed changes.
 - **Private tags (Rule 20)**: never store or propagate `<private>` tag content.
+- **Design system (Rule 21)**: read `design-system/MASTER.md` before generating any UI. Skip gracefully if file does not exist.
 
 ---
 
@@ -447,6 +448,44 @@ When outputting PRODUCT.md (Planning Assistant):
 `tools/check-product-sync.mjs` flags any governance doc that contains text
 matching patterns inside `<private>` blocks. This is a CI gate — it will fail the build.
 
+
+### Rule 21 — Design system as a UI governance artifact (NEW V12)
+
+`design-system/MASTER.md` is generated during Phase 2.6 using the
+**UI UX Pro Max** skill and governs all visual decisions — colors, typography,
+spacing, layout patterns, and UI anti-patterns — for every Feature Update.
+
+**Agent behavior:**
+```
+When generating UI components, pages, or any visual output:
+  1. Check if design-system/MASTER.md exists
+  2. If YES → read it before opening any component or page files
+     If design-system/pages/[page].md also exists → that file overrides
+     MASTER.md for that specific page only
+  3. Never choose arbitrary colors, fonts, or layout patterns —
+     derive all visual decisions from MASTER.md
+  4. If a Feature Update deviates from MASTER.md (e.g. the product owner
+     explicitly requested something different) → log as ⚖️ trade-off in lessons.md
+  5. If NO → skip silently. Continue with shadcn/ui defaults. Do NOT warn or block.
+```
+
+**MASTER.md is agent-owned:**
+- Human never edits design-system/MASTER.md directly
+- To change the design system: update the Design Identity section in PRODUCT.md
+  then say "Feature Update" → Cline regenerates MASTER.md automatically
+- design-system/pages/*.md follow the same rule — agent-owned, never edit manually
+
+**MASTER.md is a SocratiCode context artifact — not a governance session doc:**
+- It lives in `.socraticodecontextartifacts.json` (5th entry, added by Phase 2.6)
+- Accessible via `codebase_context_search` — Cline searches it like the Prisma schema
+- It is NOT added to the Rule 4 mandatory 9-doc read list
+- The 9 governance docs remain unchanged from V11
+
+**Graceful degradation — this rule is fully optional:**
+- If UI UX Pro Max skill is not installed → Phase 2.6 skips, no MASTER.md is created
+- Framework builds exactly as V11 — no errors, no blocked phases, no warnings
+- Install the skill and run Phase 2.6 any time to activate design intelligence
+
 ---
 
 ## FILE DELIVERY RULES
@@ -473,7 +512,7 @@ After this, `CLAUDE.md` exists and loads automatically — you never paste the p
 ```
 Step 1 — Folder structure
   mkdir -p .devcontainer docs .claude .specstory/specs .specstory/history .vscode
-           .cline/tasks .cline/memory .cline/handoffs
+           .cline/tasks .cline/memory .cline/handoffs design-system/pages
 
 Step 2 — CLAUDE.md (copy of master prompt — auto-loads every session)
   Cline writes CLAUDE.md from the pasted prompt content.
@@ -540,10 +579,18 @@ Step 12 — Governance doc templates
   docs/CHANGELOG_AI.md  — Rule 15 format template
   docs/DECISIONS_LOG.md — LOCKED entry format template
   docs/IMPLEMENTATION_MAP.md — all section headers
-  project.memory.md     — V11 rules + agent stack summary (4 agents)
+  project.memory.md     — V11 rules + agent stack summary (5 agents)
 
 Step 13 — Append to .cline/memory/agent-log.md + .cline/memory/lessons.md
   Log: "Bootstrap complete — project initialized"
+
+Step 14 — UI UX Pro Max skill check (NEW V12)
+  Check if .claude/skills/ui-ux-pro-max/ exists.
+  If NOT found, append reminder to agent-log.md:
+  "UI UX Pro Max skill not installed — design system generation (Phase 2.6) will be skipped.
+   Install before running Phase 2.5: /plugin install ui-ux-pro-max@ui-ux-pro-max-skill
+   Requires Python 3. Skill is optional — framework works fully without it."
+  Does NOT block Bootstrap. Does NOT fail. This is a reminder only.
 ```
 
 After Cline finishes, output:
@@ -561,6 +608,9 @@ Next steps:
    index this codebase after Phase 4 completes
 5. Install the SpecStory VS Code extension if not already installed —
    it auto-captures sessions immediately, no further config needed
+6. Install UI UX Pro Max skill for design system generation (optional but recommended):
+   /plugin install ui-ux-pro-max@ui-ux-pro-max-skill
+   (requires Python 3 — Phase 2.6 runs automatically if skill is present)
 ```
 
 ---
@@ -577,7 +627,7 @@ This step requires a physical action on your machine — no agent can trigger it
 ---
 
 ## PHASE 2 — DISCOVERY INTERVIEW
-**Who:** Claude Code (you interact with it) | **Where:** VS Code — Claude Code chat panel
+**Who:** Claude Code (you interact with it) | **Where:** Terminal — run `claude` in your project folder
 
 Before any files are generated, Claude Code interviews you to understand your app.
 This locks in tech stack, tenancy model, entities, security, and infrastructure.
@@ -639,6 +689,13 @@ SECTION H — Security & Governance
 SECTION I — Infrastructure
 □ Compose services needed? External in production? K8s confirm disabled?
 
+SECTION K — Design Identity (skip if not in PRODUCT.md — fully optional)
+□ Brand feel? (professional/enterprise | friendly/consumer | premium/luxury | technical/developer)
+□ Target aesthetic in plain English? (e.g. "clean like Linear" / "bold like Stripe" / "calm like healthcare")
+□ Industry category? (drives anti-pattern filtering in Phase 2.6)
+□ Dark mode required? (yes / no / optional toggle)
+□ Any key design constraint? (e.g. WCAG AA required / internal tool / low-end device support)
+
 SECTION J — Mobile (skip if no mobile declared)
 □ Framework: React Native bare or Expo (managed/bare workflow)?
 □ Offline-first required? If yes: what data needs to work offline?
@@ -686,8 +743,63 @@ What would the ideal version of this do that this plan doesn't include yet?"
 If the user expands the scope — update the relevant sections above before confirming.
 This is a one-question gut check, not a full re-interview. Max 2 minutes.
 
-After confirmation → Cline runs Phase 4 fully automated.
+After confirmation → Phase 2.6 runs automatically (if skill installed + Section K present)
+→ then Phase 3 generates spec files → then Cline runs Phase 4 fully automated.
 ```
+
+---
+
+
+## PHASE 2.6 — DESIGN SYSTEM GENERATION (NEW V12)
+**Who:** Cline (automated) | **Where:** VS Code — Cline panel
+**Trigger:** Runs automatically as part of the "confirmed" → Phase 3 sequence.
+User says "confirmed" once after Phase 2.5 — Cline handles 2.6 then proceeds to Phase 3.
+**Prerequisite:** UI UX Pro Max skill installed + Section K in PRODUCT.md.
+**Skip condition:** If either is absent → log to agent-log.md → continue to Phase 3 immediately.
+
+```
+Step 1 — Check prerequisites
+  If .claude/skills/ui-ux-pro-max/ does NOT exist:
+    → Append to agent-log.md: "Phase 2.6 skipped — UI UX Pro Max skill not installed"
+    → Proceed to Phase 3 immediately
+  If PRODUCT.md has no Design Identity section (Section K):
+    → Append to agent-log.md: "Phase 2.6 skipped — no Design Identity in PRODUCT.md"
+    → Proceed to Phase 3 immediately
+
+Step 2 — Extract Design Identity from PRODUCT.md
+  Read Section K. Strip any <private> tags (Rule 20).
+  Compose search string: "[industry category] [brand feel] [target aesthetic]"
+
+Step 3 — Run design system generator
+  python3 .claude/skills/ui-ux-pro-max/scripts/search.py     "[search string from Step 2]"     --design-system --persist -p "[App Name from inputs.yml]"
+  Output: design-system/MASTER.md
+
+Step 4 — Add design-system entry to .socraticodecontextartifacts.json
+  Check if file exists. If it does: MERGE (add entry, do not overwrite).
+  If it does not exist yet: create with the design-system entry only.
+  Entry to add:
+  {
+    "name": "design-system",
+    "path": "./design-system/MASTER.md",
+    "description": "Active design system — colors, typography, spacing, UI style, anti-patterns. Read before generating any UI component, page, or visual element."
+  }
+  Note: Phase 4 Part 7 will add the remaining 4 entries (database-schema,
+  implementation-map, decisions-log, product-definition). Always MERGE, never overwrite.
+
+Step 5 — Log and summarise
+  Append to CHANGELOG_AI.md: Agent: CLINE, Phase 2.6 design system generated
+  Output to user:
+  ✅ Phase 2.6 complete — Design system generated.
+     Style: [style name]
+     Colors: [primary] / [secondary] / [CTA]
+     Typography: [font pairing]
+     Top anti-patterns to avoid: [top 3]
+  Proceeding to Phase 3...
+```
+
+**If Phase 2.6 is skipped** (skill absent or no Section K):
+Cline uses shadcn/ui neutral defaults for all UI. Zero errors. Zero blocked phases.
+Install the skill and add Section K to PRODUCT.md any time → say "Feature Update" → MASTER.md generated.
 
 ---
 
@@ -701,8 +813,10 @@ Generate:
 2. `inputs.schema.json` — strict JSON Schema validation
 3. `.devcontainer/devcontainer.json` — `{{APP_NAME}}` replaced once, frozen forever
 4. `docs/DECISIONS_LOG.md` — every locked tech choice recorded
-5. Deliver ZIP + `MANIFEST.txt`
-6. Append to `docs/CHANGELOG_AI.md` with `Agent: CLAUDE_CODE`
+5. If `design-system/MASTER.md` exists: add it to `.claude/settings.json` context file list
+   (conditional — only if Phase 2.6 ran and created the file)
+6. Deliver ZIP + `MANIFEST.txt`
+7. Append to `docs/CHANGELOG_AI.md` with `Agent: CLAUDE_CODE`
 
 Output after completion:
 > ✅ Phase 3 complete. Spec files generated.
@@ -906,7 +1020,8 @@ If mobile app declared:
 - `deploy/compose/dev|stage|prod/` — split compose files per service group
 - `deploy/compose/start.sh` — convenience startup script
 - `deploy/k8s-scaffold/` — inactive placeholder with README
-- **`.socraticodecontextartifacts.json`** — SocratiCode context artifacts config:
+- **`.socraticodecontextartifacts.json`** — SocratiCode context artifacts config.
+  **V12: MERGE, never overwrite.** If Phase 2.6 already wrote a design-system entry, preserve it and add the 4 entries below alongside it:
   ```json
   {
     "artifacts": [
@@ -1129,6 +1244,7 @@ Diagnose from these categories:
 - **VISUAL_QA_FAILED** → check browser console errors, verify seed data exists, check auth config
 - **SOCRATICODE_NOT_INDEXED** → ensure Docker is running, run codebase_index, poll codebase_status
 - **PRIVATE_TAG_LEAKED** → private-tagged content found in governance doc; run pnpm tools:check-product-sync to identify and remove
+- **DESIGN_SYSTEM_MISSING** → design-system/MASTER.md referenced but not found; run Phase 2.6 manually or install UI UX Pro Max skill (`/plugin install ui-ux-pro-max@ui-ux-pro-max-skill`) then re-run
 
 Output: one-paragraph diagnosis + exact fix commands + verification command.
 
@@ -1147,6 +1263,11 @@ Edit PRODUCT.md → trigger Phase 7 → agents implement everything and keep gov
 **Agent behavior — in this exact order:**
 
 1. Read all 9 context docs — **lessons.md first, Rule 18 order: 🔴 gotchas → 🟤 decisions → rest**
+1b. **Design system check (Rule 21)** — if feature touches UI (any file in apps/[web]/src/components/, apps/[web]/src/app/, or packages/ui/):
+    → run `codebase_context_search { name: "design-system" }` to retrieve MASTER.md
+    → if page-specific override exists at design-system/pages/[page].md → use that instead
+    → Skip entirely if design-system/MASTER.md does not exist (graceful degradation)
+    Backend-only changes (packages/db, packages/jobs, tRPC routers) → skip step 1b
 2. **SocratiCode search (Rule 17)**: run `codebase_search` for the affected feature area before opening any files
 3. Confirm receipt — state current status in 3–5 bullets
 4. Rule 9 check — bidirectional (REFUSE if either direction violated)
@@ -1172,7 +1293,9 @@ Edit PRODUCT.md → trigger Phase 7 → agents implement everything and keep gov
 ---
 
 ## PHASE 7R — FEATURE ROLLBACK
-**Trigger:** "Feature Rollback: [feature name]" + attach 9 docs
+**Trigger:**
+- Via Cline: say "Feature Rollback: [feature name]" (reads 9 docs automatically)
+- Via Copilot/Claude Code: say "Feature Rollback: [feature name]" + attach all 9 docs
 
 1. Find feature entry in CHANGELOG_AI.md
 2. List all files + migrations to revert
@@ -1180,7 +1303,7 @@ Edit PRODUCT.md → trigger Phase 7 → agents implement everything and keep gov
 4. On confirmation: remove files, write down-migrations, update governance docs
 5. Write rollback entry to lessons.md as 🟢 change
 6. Run `codebase_update` — refresh SocratiCode index to reflect the rollback
-7. Deliver delta ZIP
+7. Deliver: Cline writes directly to workspace. Others: delta ZIP with DELTA_MANIFEST.txt.
 
 ---
 
@@ -1310,7 +1433,10 @@ RECOMMENDED FOCUS FOR NEXT SESSION
 ---
 
 ## GOVERNANCE SYNC
-**Trigger:** "Governance Sync" (or "Governance Sync — conflict resolution") + attach 9 docs
+**Trigger:**
+- Via Cline: say "Governance Sync" (reads 9 docs + .specstory/history/ automatically)
+- Via Copilot/Claude Code: say "Governance Sync" + attach all 9 docs
+- Conflict resolution variant: "Governance Sync — conflict resolution"
 
 **V11 — Governance Sync now reads SpecStory history for attribution reconciliation:**
 
@@ -1549,6 +1675,7 @@ WHEN THIS HAPPENS:
 
 HOW TO RECONCILE:
   1. Say "Governance Sync" to Cline + attach 9 docs
+  Cline reads automatically. For Copilot/Claude Code: attach all 9 docs manually.
   2. Cline reads .specstory/history/ and finds unattributed diffs
   3. Cline shows you a reconciliation table:
      - File changed: [filename]
@@ -1595,6 +1722,49 @@ WHEN COPILOT MAKES A LARGER CHANGE (via Chat):
   3. Cline reads the diff, validates governance alignment, updates all docs
   This gives Copilot changes the same governance treatment as Cline changes.
 ```
+
+### SCENARIO 20 — UI UX Pro Max: design system generation and usage (NEW V12)
+```
+SETUP (one-time per project, optional):
+  In Claude Code terminal:
+  /plugin marketplace add nextlevelbuilder/ui-ux-pro-max-skill
+  /plugin install ui-ux-pro-max@ui-ux-pro-max-skill
+  Prerequisite: Python 3 — check with: python3 --version
+
+ACTIVATE DESIGN INTELLIGENCE:
+  1. Add Section K (Design Identity) to docs/PRODUCT.md:
+     ## Design Identity
+     Brand feel:         [professional/enterprise | friendly/consumer | premium/luxury | technical/developer]
+     Target aesthetic:   [plain English description]
+     Industry category:  [e.g. SaaS, Healthcare, Fintech, E-commerce, Government]
+     Dark mode required: [yes / no / optional toggle]
+     Key constraint:     [e.g. WCAG AA / internal tool / low-end device support]
+  2. Phase 2.6 runs automatically when you say "confirmed" after Phase 2.5
+  3. design-system/MASTER.md created — Cline reads it before every UI Feature Update
+
+REGENERATE AFTER BRAND CHANGE:
+  1. Update Design Identity section in docs/PRODUCT.md
+  2. "Feature Update" in Cline → detects Design Identity changed
+     → reruns Phase 2.6 automatically → MASTER.md regenerated
+  Or run manually:
+  python3 .claude/skills/ui-ux-pro-max/scripts/search.py     "[industry] [brand feel] [aesthetic]" --design-system --persist -p "[AppName]"
+
+ADD PAGE-SPECIFIC DESIGN OVERRIDES:
+  python3 .claude/skills/ui-ux-pro-max/scripts/search.py     "[page description]" --design-system --persist -p "[AppName]" --page "[page-name]"
+  Creates: design-system/pages/[page-name].md
+  Phase 7 automatically uses page override when building that specific page
+
+VIEW CURRENT DESIGN SYSTEM:
+  cat design-system/MASTER.md
+
+IF SKILL NOT INSTALLED — GRACEFUL DEGRADATION:
+  Framework continues working exactly as V11
+  Cline uses shadcn/ui defaults with neutral color palette
+  No errors, no blocked phases, no warnings
+  Install the skill and run Phase 2.6 any time to activate
+  All existing V11 projects: zero changes needed to stay on V12
+```
+
 
 ---
 
@@ -1649,6 +1819,14 @@ Captures Copilot inline edits via file-change diffs.
 Powers Governance Sync attribution reconciliation (Scenarios 17 + 18).
 `.specstory/history/` is append-only — never delete entries.
 
+**UI UX Pro Max** — design intelligence skill (NEW V12)
+Install in Claude Code: `/plugin install ui-ux-pro-max@ui-ux-pro-max-skill`
+Requires Python 3. Runs via `.claude/skills/` — not a project dependency.
+Provides: 161 industry rules, 67 UI styles, 161 color palettes, 57 font pairings, 99 UX guidelines.
+Generates `design-system/MASTER.md` during Phase 2.6 and page overrides on demand.
+Cline reads MASTER.md automatically before every UI Feature Update (Rule 21).
+Fully optional — framework works identically without it (graceful degradation).
+
 **SocratiCode** — codebase intelligence MCP (V10)
 Installed automatically by Bootstrap (Phase 0) via `.vscode/mcp.json`.
 Zero config — runs via `npx -y socraticode`. Requires Docker.
@@ -1689,6 +1867,9 @@ project.memory.md            AGENT    Never edit manually
 .specstory/history/          ALL      Auto-captured by SpecStory — append-only, never delete
 .specstory/config.json       HUMAN    Written by Bootstrap — do not edit
 
+design-system/MASTER.md      AGENT    Generated by Phase 2.6 — never edit manually
+design-system/pages/*.md     AGENT    Page-specific design overrides — never edit manually
+
 README.md                    AGENT    Generated by Phase 8 when PRODUCT.md fully implemented
 apps/**                      AGENT    Edit via PRODUCT.md → Phase 7
 packages/**                  AGENT    Edit via PRODUCT.md → Phase 7
@@ -1724,7 +1905,7 @@ deploy/**                    AGENT    Edit via PRODUCT.md → Phase 7
 
 ## PROMPT VERSIONING CONVENTION
 
-Files named: `Claude Native Master Prompt v11.md`, `v12.md`, etc.
+Files named: `Claude Native Master Prompt v12.md`, `v13.md`, etc.
 All 4 files in the complete set always share the same version number.
 
 Version increments when: new Rule added, new Phase added, new Scenario added,
@@ -1733,16 +1914,36 @@ Version stays same for: wording fixes, clarifications, side note updates.
 
 **Adopting a new version on an existing project:**
 ```
-1. cp "Claude Native Master Prompt v11.md" ./CLAUDE.md
-   Also copy to .specstory/specs/v11-master-prompt.md
-2. Open new session → immediately run "Resume Session" + 3 docs
-3. Never re-run Phase 2, 3, or 4 when adopting a new version.
+1. cp "Claude Native Master Prompt v12.md" ./CLAUDE.md
+   Also copy to .specstory/specs/v12-master-prompt.md
+2. Update .specstory/config.json → set autoInjectSpec: "v12-master-prompt.md"
+3. Open new session → immediately run "Resume Session" + 3 docs
+4. Never re-run Phase 2, 3, or 4 when adopting a new version.
    Resume Session is always sufficient to reconnect to your existing project.
-4. NEW V11: update .specstory/config.json → set autoInjectSpec: "v11-master-prompt.md"
-5. V10 note: if .vscode/mcp.json with SocratiCode entry not present, add it now
+5. V12 optional: install UI UX Pro Max skill, add Section K to PRODUCT.md, run Phase 2.6
+   → "Feature Update" in Cline triggers Phase 2.6 automatically
+6. V11 note: .specstory/config.json already exists — just update the autoInjectSpec value
 ```
 
-**v10 → v11 upgrade notes:**
+**v11 → v12 upgrade notes:**
+- Rule 21 added: design-system/MASTER.md as UI governance artifact (optional, graceful degradation)
+- Section K (Design Identity) added to PRODUCT.md as optional section
+- Phase 2.6 added: automated design system generation (auto after Phase 2.5 "confirmed")
+- Phase 0 Bootstrap: design-system/pages/ folder added to Step 1, Step 14 skill check added
+- Phase 3: conditional MASTER.md entry in .claude/settings.json (only if file exists)
+- Phase 4 Part 7: MERGE instruction added for .socraticodecontextartifacts.json
+- Phase 7 step 1b added: conditional design system read before UI-touching features only
+- Phase 6.5: DESIGN_SYSTEM_MISSING triage category added (14th)
+- Phase 2 interview: Section K questions added (skip if not in PRODUCT.md)
+- File Ownership: design-system/MASTER.md + design-system/pages/*.md entries added
+- Scenario 20 added: UI UX Pro Max setup, generation, page overrides, graceful degradation
+- Session banner: Rule 21 bullet + Phase 2.6 menu entry added
+- Tool Setup Guide: UI UX Pro Max entry added
+- 9 governance docs unchanged — MASTER.md is a SocratiCode context artifact, not a session doc
+- All V11 content preserved exactly — nothing removed
+- Graceful degradation: entire V12 UI feature is opt-in — V11 behavior preserved if skill absent
+
+**v10 → v11 upgrade notes (preserved for reference):**
 - Rule 18 added: structured typed lessons.md format (🔴/🟡/🟤/⚖️/🟢)
 - Rule 19 added: SpecStory elevated to Passive Change Capture Layer
 - Rule 20 added: `<private>` tag support in PRODUCT.md
@@ -1786,6 +1987,7 @@ I am your Platform Architect. Active rules:
 • Typed lessons.md — 🔴 gotchas + 🟤 decisions read first (Rule 18) — NEW V11
 • SpecStory is passive memory layer — powers Governance Sync attribution (Rule 19) — NEW V11
 • <private> tags in PRODUCT.md — never stored or propagated (Rule 20) — NEW V11
+• Design system MASTER.md — read before any UI generation, skip if absent (Rule 21) — NEW V12
 • 9 governance docs (lessons.md read first in typed priority order)
 ─────────────────────────────────────────────────────────
 Agent mode:
@@ -1803,6 +2005,7 @@ Which phase are you starting from?
 → Phase 1      — Open devcontainer in VS Code — YOU do this
 → Phase 2      — PRODUCT.md interview — CLAUDE CODE (one-time per project)
 → Phase 2.5    — Spec summary + product direction check — CLAUDE CODE
+→ Phase 2.6    — Design system generation (auto after Phase 2.5 · requires UI UX Pro Max skill)
 → Phase 3      — Generate spec files (inputs.yml + schema) — CLAUDE CODE
 → Phase 4      — Full monorepo scaffold — CLINE (automated, no stops, indexes codebase)
 → Phase 5      — Validation — CLINE (auto after Phase 4 · manual fallback: "Start Phase 5")

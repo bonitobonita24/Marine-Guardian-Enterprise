@@ -30,23 +30,46 @@
 | 7     | Auth + Pages           | ✅     | 2026-03-18 |
 | 8     | Production Ready       | ⏳     | 2026-03-18 |
 
-## Phase 8 Status (2026-03-18) — IN PROGRESS
+## Phase 8 Status (2026-03-19) — IN PROGRESS
 
+### Auth + CRUD ✅
 | Check                                         | Result |
 | -------------------------------------------- | ------ |
 | Auth.js v5 + Credentials provider            | ✅     |
 | JWT session with role/tenant context         | ✅     |
 | tRPC procedures (protected, tenant, authorized) | ✅   |
 | Full CRUD router (fisherfolk, vessel, etc.) | ✅     |
+
+### Pages ✅
+| Check                                         | Result |
+| -------------------------------------------- | ------ |
 | Dashboard + 9 module pages                   | ✅     |
 | Tenant layout + sidebar + provider           | ✅     |
 | Inline SVG icons (no external deps)         | ✅     |
 | Settings page + tenant switcher              | ✅     |
-| CSV export endpoint                          | ✅     |
 | Fisherfolk new form page                    | ✅     |
 | Fisherfolk detail page                      | ✅     |
+| Vessel new form page                        | ✅     |
+| Vessel detail page                          | ✅     |
+| Permit new form page                        | ✅     |
+| Permit detail page                          | ✅     |
+| CatchReport new form page                   | ✅     |
+
+### Infrastructure ✅
+| Check                                         | Result |
+| -------------------------------------------- | ------ |
+| Docker services (postgres, pgbouncer, valkey, minio, mailhog) | ✅ |
+| Prisma migrations applied                     | ✅     |
+| mg_app database user created                 | ✅     |
 | tsconfig.json declaration: false             | ✅     |
 | pnpm turbo typecheck (all 15 tasks)         | ✅     |
+
+### Visual QA (Rule 16) ✅ — 2026-03-19
+| Check                                         | Result |
+| -------------------------------------------- | ------ |
+| GET /api/health                              | ✅ 200 `{"status":"ok","db":"connected"}` |
+| GET /login                                   | ✅ 200 |
+| GET /                                        | ✅ 307 redirect (auth flow) |
 
 ---
 

@@ -235,3 +235,42 @@
 - Schema/migrations: none
 - Errors encountered: ESLint (error in conditional)
 - Errors resolved: Wrapped `error` in `Boolean()` for strict boolean expression
+
+---
+
+## 2026-03-19 — Phase 8: Visual QA + Infrastructure Fix
+
+- Agent: CLINE
+- Why: Visual QA per Rule 16 — started Docker services, fixed PgBouncer, verified app loads correctly
+- Files added: none
+- Files modified:
+  - deploy/compose/docker-compose.db.yml (PgBouncer: DATABASE_URL → DATABASES format)
+  - apps/marine-guardian-enterprise/src/middleware.ts (added /api/health to public routes)
+  - .env.local (added NEXTAUTH_SECRET and NEXTAUTH_URL)
+- Files deleted: none
+- Schema/migrations: none
+- Errors encountered:
+  1. PgBouncer "DATABASES_HOST or DATABASES required" — wrong env var format
+  2. Auth.js MissingSecret — NEXTAUTH_SECRET not set
+  3. Database auth failed for mg_app — user didn't exist
+  4. /api/health redirecting to login — not in public routes
+- Errors resolved:
+  1. Changed DATABASE_URL to DATABASES format in docker-compose.db.yml
+  2. Added NEXTAUTH_SECRET to .env.local
+  3. Created mg_app database user with proper grants
+  4. Added isOnHealthRoute check to middleware.ts
+
+### Visual QA Results (Rule 16)
+| Check | Result |
+|-------|--------|
+| GET /api/health | ✅ 200 `{"status":"ok","db":"connected"}` |
+| GET /login | ✅ 200 |
+| GET / | ✅ 307 redirect (auth flow) |
+| Docker services | ✅ All 5 services healthy |
+
+### Docker Services Running
+- marine-guardian-enterprise-postgres-1 (healthy)
+- marine-guardian-enterprise-pgbouncer-1 (healthy)
+- marine-guardian-enterprise-valkey-1 (healthy)
+- marine-guardian-enterprise-minio-1 (healthy)
+- marine-guardian-enterprise-mailhog-1 (healthy)

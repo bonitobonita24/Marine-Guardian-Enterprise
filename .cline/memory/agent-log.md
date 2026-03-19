@@ -128,3 +128,24 @@
 
 ### Note
 Program form has schema mismatch (router requires startDate, budgetAllocation not in input). Deferred until Phase 8 iteration.
+
+---
+
+## 2026-03-19 | Phase 8 Visual QA + Infrastructure Fix | CLINE
+
+### Actions Taken
+1. Started Docker services (PostgreSQL, PgBouncer, Valkey, MinIO, MailHog)
+2. Fixed PgBouncer configuration (DATABASES env var format)
+3. Applied Prisma migrations
+4. Created mg_app database user
+5. Fixed NEXTAUTH_SECRET issue
+6. Fixed /api/health public route in middleware
+7. Ran Visual QA - all checks passing
+
+### Visual QA Results
+- GET /api/health: ✅ 200 {"status":"ok","db":"connected"}
+- GET /login: ✅ 200
+- GET /: ✅ 307 redirect
+
+### Docker Services Running
+- postgres, pgbouncer, valkey, minio, mailhog - all healthy

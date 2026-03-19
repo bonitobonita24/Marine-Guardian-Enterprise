@@ -5,11 +5,12 @@ export default auth((req) => {
   const { nextUrl } = req
   const isLoggedIn = req.auth != null
   const isOnApiAuthRoute = nextUrl.pathname.startsWith("/api/auth")
+  const isOnHealthRoute = nextUrl.pathname === "/api/health"
   const isOnLoginPage = nextUrl.pathname === "/login"
   const isOnRootPage = nextUrl.pathname === "/"
 
-  // Always allow NextAuth callback routes
-  if (isOnApiAuthRoute) return NextResponse.next()
+  // Always allow NextAuth callback routes and health check
+  if (isOnApiAuthRoute || isOnHealthRoute) return NextResponse.next()
 
   // Logged-in users on root → redirect to their active tenant slug (done client-side via page.tsx)
   if (isOnRootPage && !isLoggedIn) {
