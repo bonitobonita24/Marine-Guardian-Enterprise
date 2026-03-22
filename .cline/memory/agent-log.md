@@ -74,3 +74,26 @@ Worker container was failing to start with `Cannot find module '@marine-guardian
 Per Rule 17: "SocratiCode index pending — start Docker and run codebase_index"
 - MCP server configured in .vscode/mcp.json
 - Will auto-pull Docker images on first MCP tool use
+
+---
+
+## 2026-03-20 | Session Resume #4 | CLINE
+
+### Actions
+- Attempted "Index this codebase" via SocratiCode per Rule 17
+
+### SocratiCode Index Attempt
+- Ran: `npx -y socraticode index`
+- Status: PENDING - SocratiCode Docker containers (ollama, qdrant) not appearing
+- Docker is running but not showing SocratiCode containers
+- Indexing process appears to be hanging
+
+### Per Rule 17 Notes
+- Rule 17: "SocratiCode index pending — start Docker and run codebase_index"
+- MCP server configured in .vscode/mcp.json
+- SocratiCode requires Docker to manage its own Qdrant + Ollama containers
+
+### Next Steps
+- Check Docker resources (memory, disk)
+- Run indexing manually in terminal to observe output
+- Or restart SocratiCode MCP server in VS Code
