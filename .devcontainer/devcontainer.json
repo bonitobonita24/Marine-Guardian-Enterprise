@@ -5,8 +5,12 @@
     "context": ".."
   },
   "features": {
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "2",
+      "enableNonRootDocker": "true"
+    }
   },
+  "mounts": ["source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"],
   "customizations": {
     "vscode": {
       "extensions": [
