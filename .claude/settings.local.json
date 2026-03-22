@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker:*)",
+      "Bash(sudo systemctl:*)",
+      "Bash(sudo service:*)",
+      "Read(//usr/local/share/**)",
+      "Bash(sudo /usr/local/share/docker-init.sh)",
+      "Bash(/usr/local/share/docker-init.sh)"
+    ]
+  }
+}
