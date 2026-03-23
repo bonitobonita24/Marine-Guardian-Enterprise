@@ -1,5 +1,0 @@
-name: marine-guardian-enterprise
-
-# Infrastructure services — Email (dev via MailHog)
-# MailHog is already included in storage.yml
-services: {}
